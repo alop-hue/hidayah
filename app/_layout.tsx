@@ -18,6 +18,9 @@ import { ThemeProvider, useTheme } from '@/theme/ThemeContext';
 
 type GateState = 'unpacking' | 'indexing' | 'ready' | 'error';
 
+// Bootstraps must never overlap: concurrent unpacks corrupt the db files.
+let bootChain: Promise<void> = Promise.resolve();
+
 function i18nKeyToLabel(name: string): string {
   return i18n.exists(`prayer.${name}`) ? i18n.t(`prayer.${name}`) : name;
 }
@@ -106,7 +109,7 @@ function Providers() {
   useEffect(() => {
     installErrorListener();
     let cancelled = false;
-    (async () => {
+    bootChain = bootChain.catch(() => {}).then(async () => {
       try {
         await initI18n(language);
         applyRtl(language);
@@ -126,7 +129,7 @@ function Providers() {
         console.error('bootstrap failed', e);
         if (!cancelled) setGate('error');
       }
-    })();
+    });
     return () => {
       cancelled = true;
     };

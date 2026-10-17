@@ -11,6 +11,7 @@ import { ResizableSheet } from '@/components/ui/Sheet';
 import { getHadithByBook, type HadithBookRow, type HadithRow } from '@/db/queries';
 import { getHadithBooks } from '@/db/queries';
 import { isHadithBookmarked, toggleHadithBookmark } from '@/db/userdb';
+import { toArabicDigits } from '@/lib/digits';
 import { useTheme } from '@/theme/ThemeContext';
 import { radius, space } from '@/theme/tokens';
 
@@ -45,17 +46,26 @@ export default function HadithBookScreen() {
     setBookmarked(await isHadithBookmarked(h.book_slug, h.id));
   };
 
+  const activeTitle = () => {
+    const slug = active?.book_slug ?? '';
+    if (!isArabic) return slug;
+    return book?.title_arabic || arabicReference(slug) || slug;
+  };
+
   const copy = async () => {
     if (!active) return;
-    await Clipboard.setString(
-      `${active.arabic}\n\n${active.english}\n\n[${active.book_slug}${active.number > 0 ? ` ${active.number}` : ''}${active.grade ? ` · ${active.grade}` : ''}]`,
-    );
+    const meta = `[${activeTitle()}${active.number > 0 ? ` ${isArabic ? toArabicDigits(active.number) : active.number}` : ''}${
+      active.grade ? ` · ${isArabic ? arabicTextPart(active.grade) || gradeInfo(active.grade)?.labelAr || '' : active.grade}` : ''
+    }]`;
+    await Clipboard.setString(isArabic ? `${active.arabic}\n${meta}` : `${active.arabic}\n\n${active.english}\n${meta}`);
   };
 
   const share = async () => {
     if (!active) return;
     await Share.share({
-      message: `${active.arabic}\n${active.english}\n— ${active.book_slug} ${active.number > 0 ? active.number : ''}`,
+      message: isArabic
+        ? `${active.arabic}\n— ${activeTitle()} ${active.number > 0 ? toArabicDigits(active.number) : ''}`
+        : `${active.arabic}\n${active.english}\n— ${active.book_slug} ${active.number > 0 ? active.number : ''}`,
     });
   };
 
@@ -100,23 +110,29 @@ export default function HadithBookScreen() {
           }
           renderItem={({ item }) => {
             const gi = gradeInfo(item.grade);
+            const rowTitle = item.chapter
+              ? chapterLabel(item.chapter, isArabic)
+              : isArabic
+                ? (book?.title_arabic ?? item.book_slug)
+                : item.book_slug;
+            const gradeFallback = isArabic ? arabicTextPart(item.grade) : item.grade;
             return (
             <Pressable
               onPress={() => openHadith(item)}
               style={({ pressed }) => [styles.row, { borderBottomColor: colors.hairline }, pressed && { backgroundColor: colors.bgSunken }]}
             >
               <View style={styles.rowTop}>
-                <Text variant="caption" font="uiBold" color="primary">
-                  {item.chapter || item.book_slug} {item.number > 0 ? `· ${item.number}` : ''}
+                <Text variant="caption" font="uiBold" color="primary" style={isArabic ? styles.rtlTitle : undefined}>
+                  {rowTitle} {item.number > 0 ? `· ${isArabic ? toArabicDigits(item.number) : item.number}` : ''}
                 </Text>
                 {gi ? (
                   <View style={[styles.gradeChip, { backgroundColor: gi.bg, borderColor: gi.color + '40' }]}>
                     <Ionicons name={gi.icon} size={11} color={gi.color} />
-                    <Text variant="micro" font="uiBold" style={{ color: gi.color }}>{gi.label}</Text>
+                    <Text variant="micro" font="uiBold" style={{ color: gi.color }}>{isArabic ? gi.labelAr : gi.label}</Text>
                   </View>
-                ) : item.grade ? (
+                ) : gradeFallback ? (
                   <Text variant="micro" color="tertiary" numberOfLines={1} style={{ maxWidth: '60%' }}>
-                    {item.grade}
+                    {gradeFallback}
                   </Text>
                 ) : null}
               </View>
@@ -145,6 +161,7 @@ export default function HadithBookScreen() {
         onCopy={copy}
         onShare={share}
         isArabic={isArabic}
+        bookTitleAr={book?.title_arabic ?? ''}
         t={t}
         colors={colors}
       />
@@ -152,26 +169,72 @@ export default function HadithBookScreen() {
   );
 }
 
-function gradeInfo(grade: string): { color: string; bg: string; icon: keyof typeof Ionicons.glyphMap; label: string; descEn: string; descAr: string } | null {
+function gradeInfo(grade: string): { color: string; bg: string; icon: keyof typeof Ionicons.glyphMap; label: string; labelAr: string; descEn: string; descAr: string } | null {
   if (!grade) return null;
   const g = grade.toLowerCase();
   if (g.includes('sahih') || g.includes('authentic') || g.includes('صحيح'))
-    return { color: '#16a34a', bg: '#dcfce7', icon: 'checkmark-circle', label: 'Sahih', descEn: 'Authentic – chain of narrators is unbroken and reliable', descAr: 'صحيح – سند المتصل والثقة' };
+    return { color: '#16a34a', bg: '#dcfce7', icon: 'checkmark-circle', label: 'Sahih', labelAr: 'صحيح', descEn: 'Authentic – chain of narrators is unbroken and reliable', descAr: 'صحيح – سند المتصل والثقة' };
   if (g.includes('hasan') || g.includes('حسن'))
-    return { color: '#2563eb', bg: '#dbeafe', icon: 'shield-checkmark', label: 'Hasan', descEn: 'Good – slight weakness in narration but still acceptable', descAr: 'حسن – ضعف خفيف في السند لكنه مقبول' };
+    return { color: '#2563eb', bg: '#dbeafe', icon: 'shield-checkmark', label: 'Hasan', labelAr: 'حسن', descEn: 'Good – slight weakness in narration but still acceptable', descAr: 'حسن – ضعف خفيف في السند لكنه مقبول' };
   if (g.includes('da\'eef') || g.includes('weak') || g.includes('ضعيف'))
-    return { color: '#d97706', bg: '#fef3c7', icon: 'warning', label: 'Da\'eef', descEn: 'Weak – narrators have issues; use with caution', descAr: 'ضعيف – فيه ناقلون مشكلون؛ استخدم بحذر' };
+    return { color: '#d97706', bg: '#fef3c7', icon: 'warning', label: 'Da\'eef', labelAr: 'ضعيف', descEn: 'Weak – narrators have issues; use with caution', descAr: 'ضعيف – فيه ناقلون مشكلون؛ استخدم بحذر' };
   if (g.includes('mawdu') || g.includes('fabricat') || g.includes('munkar') || g.includes('موضوع') || g.includes('منكر'))
-    return { color: '#dc2626', bg: '#fee2e2', icon: 'close-circle', label: 'Mawdu\'', descEn: 'Fabricated – not from the Prophet ﷺ; reject entirely', descAr: 'موضوع – ليس من النبي ﷺ؛ ارفضه تماماً' };
+    return { color: '#dc2626', bg: '#fee2e2', icon: 'close-circle', label: 'Mawdu\'', labelAr: 'موضوع', descEn: 'Fabricated – not from the Prophet ﷺ; reject entirely', descAr: 'موضوع – ليس من النبي ﷺ؛ ارفضه تماماً' };
   if (g.includes('marfu') || g.includes('elevated') || g.includes('مرفوع'))
-    return { color: '#7c3aed', bg: '#ede9fe', icon: 'arrow-up-circle', label: 'Marfu\'', descEn: 'Elevated – reliably attributed to the Prophet ﷺ', descAr: 'مرفوع – مرفوع إلى النبي ﷺ بسند صحيح' };
+    return { color: '#7c3aed', bg: '#ede9fe', icon: 'arrow-up-circle', label: 'Marfu\'', labelAr: 'مرفوع', descEn: 'Elevated – reliably attributed to the Prophet ﷺ', descAr: 'مرفوع – مرفوع إلى النبي ﷺ بسند صحيح' };
   if (g.includes('mawquf') || g.includes('stopped') || g.includes('موقوف'))
-    return { color: '#6b7280', bg: '#f3f4f6', icon: 'pause-circle', label: 'Mawquf', descEn: 'Stopped – attributed to a Companion, not directly to the Prophet ﷺ', descAr: 'موقوف – منسوب إلى صحابي وليس مباشرة للنبي ﷺ' };
+    return { color: '#6b7280', bg: '#f3f6f4', icon: 'pause-circle', label: 'Mawquf', labelAr: 'موقوف', descEn: 'Stopped – attributed to a Companion, not directly to the Prophet ﷺ', descAr: 'موقوف – منسوب إلى صحابي وليس مباشرة للنبي ﷺ' };
   return null;
 }
 
+const AR_BOOKS: [RegExp, string][] = [
+  [/sahih al-?bukhari|al-?bukhari|bukhari/i, 'صحيح البخاري'],
+  [/sahih muslim|muslim/i, 'صحيح مسلم'],
+  [/sunan abi dawud|sunan abu dawud|abu dawud/i, 'سنن أبي داود'],
+  [/jami'? ?at-?tirmidhi|at-?tirmidhi|tirmidhi/i, 'جامع الترمذي'],
+  [/sunan an-?nasa'?i|an-?nasa'?i|nasai/i, 'سنن النسائي'],
+  [/sunan ibn majah|ibn majah/i, 'سنن ابن ماجه'],
+  [/musnad ahmad|ahmad/i, 'مسند أحمد'],
+  [/muwatta/i, 'موطأ مالك'],
+  [/al-?darimi|darimi/i, 'سنن الدارمي'],
+  [/bulugh/i, 'بلوغ المرام'],
+  [/mishkat/i, 'مشكاة المصابيح'],
+  [/riyad|riad/i, 'رياض الصالحين'],
+  [/bayhaqi/i, 'السنن الكبرى'],
+  [/ibn hibban/i, 'الثقات'],
+  [/hakim|mustadrak/i, 'المستدرك على الصحيحين'],
+];
+
+/** First Arabic-script segment of a mixed string ('' when none). */
+function arabicTextPart(s: string): string {
+  const i = s.search(/[\u0600-\u06FF]/);
+  return i >= 0 ? s.slice(i).trim() : '';
+}
+
+/** "1 Revelation كتاب بدء الوحى" → language-appropriate chapter label. */
+function chapterLabel(chapter: string, isArabic: boolean): string {
+  if (!chapter) return '';
+  const arStart = chapter.search(/[\u0600-\u06FF]/);
+  if (arStart < 0) return chapter.trim();
+  const en = chapter.slice(0, arStart).trim();
+  const ar = chapter.slice(arStart).trim();
+  return isArabic ? ar || en : en || ar;
+}
+
+/** English reference string → Arabic book title + numbers (drops dataset noise). */
+function arabicReference(ref: string): string {
+  if (!ref) return '';
+  const m = ref.match(/Reference\s*:\s*([^]*?)(?:\s+In-book\s+reference|$)/i);
+  let core = (m?.[1] ?? ref).trim().replace(/\s+USC-MSA.*$/i, '').trim();
+  for (const [re, ar] of AR_BOOKS) {
+    if (re.test(core)) return toArabicDigits(core.replace(re, ar));
+  }
+  core = toArabicDigits(core);
+  return arabicTextPart(core) || (/^[٠-٩\s·-]+$/.test(core) ? core : '');
+}
+
 function HadithSheet({
-  visible, hadith, onClose, bookmarked, onToggleBookmark, onCopy, onShare, isArabic, t, colors,
+  visible, hadith, onClose, bookmarked, onToggleBookmark, onCopy, onShare, isArabic, bookTitleAr, t, colors,
 }: {
   visible: boolean;
   hadith: HadithRow | null;
@@ -181,18 +244,23 @@ function HadithSheet({
   onCopy: () => void;
   onShare: () => void;
   isArabic: boolean;
+  bookTitleAr: string;
   t: (k: string, o?: Record<string, unknown>) => string;
   colors: ReturnType<typeof useTheme>['colors'];
 }) {
   const insets = useSafeAreaInsets();
   const gi = gradeInfo(hadith?.grade ?? '');
+  const sheetTitle = isArabic
+    ? (bookTitleAr || (hadith ? arabicReference(hadith.book_slug) || hadith.book_slug : ''))
+    : (hadith?.book_slug ?? '');
+  const gradeAr = hadith ? arabicTextPart(hadith.grade) : '';
   return (
     <ResizableSheet visible={visible} onClose={onClose}>
       {hadith && (
         <>
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: space[5], paddingBottom: insets.bottom + space[4] }} >
-            <Text variant="caption" font="uiBold" color="primary">
-              {hadith.book_slug} {hadith.number > 0 ? `· ${hadith.number}` : ''}
+            <Text variant="caption" font="uiBold" color="primary" style={isArabic ? styles.rtlTitle : undefined}>
+              {sheetTitle} {hadith.number > 0 ? `· ${isArabic ? toArabicDigits(hadith.number) : hadith.number}` : ''}
             </Text>
               <Text variant="body" font="arabicBold" style={{ color: colors.quranText, textAlign: 'right', marginTop: space[3] }}>
                 {hadith.arabic}
@@ -206,20 +274,24 @@ function HadithSheet({
                 <View style={[styles.gradeCard, { backgroundColor: gi.bg, borderColor: gi.color + '40' }]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                     <Ionicons name={gi.icon} size={18} color={gi.color} />
-                    <Text variant="bodySmall" font="uiBold" style={{ color: gi.color }}>{gi.label} – {hadith.grade}</Text>
+                    <Text variant="bodySmall" font="uiBold" style={{ color: gi.color }}>
+                      {isArabic
+                        ? `${gi.labelAr}${gradeAr ? ` – ${gradeAr}` : ''}`
+                        : `${gi.label} – ${hadith.grade}`}
+                    </Text>
                   </View>
                   <Text variant="caption" style={{ color: gi.color + 'cc', marginTop: 4 }}>
                     {isArabic ? gi.descAr : gi.descEn}
                   </Text>
                 </View>
-              ) : hadith.grade ? (
+              ) : hadith.grade && (isArabic ? gradeAr : hadith.grade) ? (
                 <Text variant="caption" color="tertiary" style={{ marginTop: space[3] }}>
-                  {t('hadith.grade')}: {hadith.grade}
+                  {t('hadith.grade')}: {isArabic ? gradeAr : hadith.grade}
                 </Text>
               ) : null}
-              {hadith.reference ? (
+              {hadith.reference && (isArabic ? arabicReference(hadith.reference) : hadith.reference) ? (
                 <Text variant="caption" color="tertiary" style={{ marginTop: 2 }}>
-                  {t('hadith.reference')}: {hadith.reference}
+                  {t('hadith.reference')}: {isArabic ? arabicReference(hadith.reference) : hadith.reference}
                 </Text>
               ) : null}
               <View style={[styles.actions, { borderTopColor: colors.hairline }]}>

@@ -7,6 +7,7 @@ import * as Location from 'expo-location';
 
 import { Surface, Text } from '@/components/ui';
 import { getSurah } from '@/db/queries';
+import { toArabicDigits } from '@/lib/digits';
 import { formatCountdown, formatTime, getTimesForDate, hijriDate } from '@/services/prayer';
 import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
@@ -63,8 +64,12 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    if (lastRead) getSurah(lastRead.surah).then((s) => setSurahName(s?.english_name ?? null));
-  }, [lastRead]);
+    if (!lastRead) return;
+    const isAr = i18n.dir() === 'rtl' || i18n.language.startsWith('ar');
+    getSurah(lastRead.surah).then((s) =>
+      setSurahName(s ? (isAr ? s.name.replace(/^سُ?ورَ?ةُ?\s+/u, '') : s.english_name) : null),
+    );
+  }, [lastRead, i18n.language, i18n.dir]);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? t('home.greetingMorning') : hour < 18 ? t('home.greetingAfternoon') : t('home.greetingEvening');
@@ -155,8 +160,9 @@ export default function HomeScreen() {
             <Text variant="bodySmall" font="uiBold" color="primary">
               {t('home.continueReading')}
             </Text>
-            <Text variant="body" font="uiBold">
-              {t('home.surah', { surah: surahName })} · {t('quran.verseNumber')} {lastRead.ayah}
+            <Text variant="body" font={i18n.dir() === 'rtl' ? 'arabicBold' : 'uiBold'}>
+              {t('home.surah', { surah: surahName })} · {t('quran.verseNumber')}{' '}
+              {i18n.dir() === 'rtl' ? toArabicDigits(lastRead.ayah) : lastRead.ayah}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />

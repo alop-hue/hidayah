@@ -8,8 +8,35 @@ import { useTranslation } from 'react-i18next';
 
 import { LoadingState, Segmented, Text } from '@/components/ui';
 import { getAdhkarByCategory, getAdhkarCategories, type AdhkarRow } from '@/db/queries';
+import { toArabicDigits } from '@/lib/digits';
 import { useTheme } from '@/theme/ThemeContext';
 import { radius, space } from '@/theme/tokens';
+
+const ADH_KAR_BOOKS: [RegExp, string][] = [
+  [/^Bukhari\b/i, 'صحيح البخاري'],
+  [/^Muslim\b/i, 'صحيح مسلم'],
+  [/^Abu Dawud\b/i, 'سنن أبي داود'],
+  [/^Tirmidhi\b/i, 'جامع الترمذي'],
+  [/^Nasai\b/i, 'سنن النسائي'],
+  [/^Ibn Majah\b/i, 'سنن ابن ماجه'],
+  [/^Ahmad\b/i, 'مسند أحمد'],
+  [/^Hakim\b/i, 'المستدرك على الصحيحين'],
+  [/^Quran\b/i, 'القرآن'],
+  [/^Darimi\b/i, 'سنن الدارمي'],
+  [/^Malik\b/i, 'موطأ مالك'],
+  [/^Ibn Hibban\b/i, 'الثقات'],
+  [/^Bayhaqi\b/i, 'السنن الكبرى'],
+  [/^Tabarani\b/i, 'المعجم الأوسط'],
+  [/^Darqutni\b/i, 'سنن الدارقطني'],
+];
+
+/** English citation ("Muslim 2723", "Hakim, sahih") → Arabic for Arabic mode. */
+function arabicSource(src: string): string {
+  let out = src;
+  for (const [re, ar] of ADH_KAR_BOOKS) out = out.replace(re, ar);
+  out = out.replace(/,\s*sahih\b/gi, ' (صحيح)').replace(/\bsahih\b/gi, 'صحيح');
+  return out;
+}
 
 export default function DhikrScreen() {
   const { t, i18n } = useTranslation();
@@ -55,7 +82,7 @@ export default function DhikrScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline, flexDirection: rtl ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.header, { flexDirection: rtl ? 'row-reverse' : 'row' }]}>
         <Pressable onPress={() => router.back()} hitSlop={8} accessibilityLabel={t('common.back')}>
           <Ionicons name="chevron-back" size={24} color={colors.text} />
         </Pressable>
@@ -102,7 +129,8 @@ export default function DhikrScreen() {
                 ) : null}
                 <View style={[styles.cardFooter, rtl && { flexDirection: 'row-reverse' }]}>
                   <Text variant="caption" color="tertiary">
-                    {t('dhikr.count', { n: item.count })} · {item.source}
+                    {t('dhikr.count', { n: isArabic ? toArabicDigits(item.count) : item.count })} ·{' '}
+                    {isArabic ? toArabicDigits(arabicSource(item.source)) : item.source}
                   </Text>
                   <Pressable
                     onPress={() => bump(item.id, item.count)}
@@ -110,7 +138,11 @@ export default function DhikrScreen() {
                     style={[styles.countBtn, { borderColor: done ? colors.success : colors.hairlineStrong, backgroundColor: done ? colors.primarySoft : colors.bgSunken }]}
                   >
                     <Text variant="bodySmall" font="uiBold" color={done ? 'primary' : 'secondary'}>
-                      {done ? t('dhikr.done') : `${counts[item.id] ?? 0}/${item.count}`}
+                      {done
+                        ? t('dhikr.done')
+                        : isArabic
+                          ? toArabicDigits(`${counts[item.id] ?? 0}/${item.count}`)
+                          : `${counts[item.id] ?? 0}/${item.count}`}
                     </Text>
                   </Pressable>
                 </View>
@@ -130,7 +162,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: space[3],
     paddingVertical: space[3],
-    borderBottomWidth: StyleSheet.hairlineWidth * 2,
   },
   card: {
     borderWidth: StyleSheet.hairlineWidth * 2,

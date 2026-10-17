@@ -17,8 +17,17 @@ function gzPath(): string {
   return new File(Paths.document, 'quran.db.gz').uri;
 }
 
-async function materializeGz(): Promise<void> {
+async function materializeGz(reDownload = false): Promise<void> {
   const asset = Asset.fromModule(require('../../assets/data/quran.db.gz'));
+  if (reDownload && asset.hash && asset.type) {
+    try {
+      await LegacyFS.deleteAsync(`${Paths.cache.uri}ExponentAsset-${asset.hash}.${asset.type}`, {
+        idempotent: true,
+      });
+    } catch {
+      // ignore — downloadAsync below re-checks the cache anyway
+    }
+  }
   await asset.downloadAsync();
   const dst = gzPath();
   const target = new File(dst);
@@ -79,20 +88,38 @@ function inflateGzToFile(): Promise<void> {
 }
 
 async function unpackDatabase(): Promise<void> {
-  await materializeGz();
   const out = dbFile();
-  if (out.exists) out.delete();
-  try {
-    await inflateGzToFile();
-    const gz = new File(gzPath());
+  const gz = new File(gzPath());
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
     if (gz.exists) gz.delete();
-  } catch (e) {
     if (out.exists) out.delete();
-    throw e;
+    try {
+      await materializeGz(attempt > 0);
+      await inflateGzToFile();
+      if (gz.exists) gz.delete();
+      return;
+    } catch (e) {
+      lastError = e;
+      if (out.exists) out.delete();
+    }
   }
+  throw lastError;
 }
 
-export async function ensureDatabase(): Promise<void> {
+let ensureInFlight: Promise<void> | null = null;
+
+export function ensureDatabase(): Promise<void> {
+  if (!ensureInFlight) {
+    ensureInFlight = ensureDatabaseOnce().catch((e) => {
+      ensureInFlight = null;
+      throw e;
+    });
+  }
+  return ensureInFlight;
+}
+
+async function ensureDatabaseOnce(): Promise<void> {
   const out = dbFile();
   if (!out.exists) {
     await unpackDatabase();
@@ -130,6 +157,7 @@ export async function closeDb(): Promise<void> {
 }
 
 export async function wipeLocalData(): Promise<void> {
+  ensureInFlight = null;
   await closeDb();
   for (const name of [DB_NAME, 'quran.db.gz', 'quran.db-wal', 'quran.db-shm']) {
     const f = new File(Paths.document, name);

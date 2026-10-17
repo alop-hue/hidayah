@@ -6,6 +6,23 @@ import { Platform } from 'react-native';
 import type { AdhanSound, PrayerName } from '../store/settings';
 
 const CHANNEL_PRAYER = 'prayer';
+const CHANNEL_PRAYER_SILENT = 'prayer-silent';
+const CHANNEL_PRAYER_CUSTOM = 'prayer-custom';
+
+const ANDROID_CHANNEL_BASE = {
+  importance: Notifications.AndroidImportance.MAX,
+  vibrationPattern: [0, 250, 150, 250],
+  enableVibrate: true,
+  bypassDnd: true,
+  lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+  showBadge: false,
+};
+
+function channelFor(sound: AdhanSound): string {
+  if (sound === 'silent') return CHANNEL_PRAYER_SILENT;
+  if (sound === 'default') return CHANNEL_PRAYER;
+  return `prayer-${sound}`;
+}
 
 export const canRequestExactAlarms = (): boolean =>
   Platform.OS === 'android' && Number(Platform.Version) >= 31;
@@ -50,17 +67,22 @@ export async function setupNotificationChannels(): Promise<void> {
   if (Platform.OS !== 'android') return;
   for (const key of Object.keys(ADHAN_SOUND_FILES) as (keyof typeof ADHAN_SOUND_FILES)[]) {
     const file = ADHAN_SOUND_FILES[key];
-    await Notifications.setNotificationChannelAsync(key === 'default' ? CHANNEL_PRAYER : `prayer-${key}`, {
+    const isDefault = file === 'default';
+    await Notifications.setNotificationChannelAsync(isDefault ? CHANNEL_PRAYER : `prayer-${key}`, {
       name: `Prayer (${key})`,
-      importance: Notifications.AndroidImportance.MAX,
-      sound: file,
-      vibrationPattern: [0, 250, 150, 250],
-      enableVibrate: true,
-      bypassDnd: true,
-      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-      showBadge: false,
+      ...ANDROID_CHANNEL_BASE,
+      ...(isDefault ? {} : { sound: file }),
     });
   }
+  await Notifications.setNotificationChannelAsync(CHANNEL_PRAYER_SILENT, {
+    name: 'Prayer (silent)',
+    ...ANDROID_CHANNEL_BASE,
+    sound: null,
+  });
+  await Notifications.setNotificationChannelAsync(CHANNEL_PRAYER_CUSTOM, {
+    name: 'Prayer (custom)',
+    ...ANDROID_CHANNEL_BASE,
+  });
 }
 
 export async function requestNotificationPermission(): Promise<boolean> {
@@ -122,10 +144,7 @@ export function buildDateTrigger(date: Date): Notifications.DateTriggerInput {
 }
 
 export async function schedulePrayerReminder(reminder: PrayerReminder): Promise<string | null> {
-  const channelId =
-    reminder.sound === 'silent' || reminder.sound === 'default'
-      ? CHANNEL_PRAYER
-      : `prayer-${reminder.sound}`;
+  const channelId = channelFor(reminder.sound);
   const trigger: Notifications.DailyTriggerInput =
     Platform.OS === 'android'
       ? { ...buildDailyTrigger(reminder.hour, reminder.minute), channelId }
@@ -159,8 +178,7 @@ export async function sendTestNotification(title: string, body: string): Promise
 }
 
 export async function sendTestAdhan(sound: AdhanSound, title: string, body: string): Promise<void> {
-  const channelId =
-    sound === 'silent' || sound === 'default' ? CHANNEL_PRAYER : `prayer-${sound}`;
+  const channelId = channelFor(sound);
   await Notifications.scheduleNotificationAsync({
     content: {
       title,
@@ -180,8 +198,7 @@ export async function sendDelayedTestNotification(
   sound: AdhanSound = 'makkah',
 ): Promise<string> {
   const date = new Date(Date.now() + Math.max(1, seconds) * 1000);
-  const channelId =
-    sound === 'silent' || sound === 'default' ? CHANNEL_PRAYER : `prayer-${sound}`;
+  const channelId = channelFor(sound);
   return Notifications.scheduleNotificationAsync({
     content: {
       title,

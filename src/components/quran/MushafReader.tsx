@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Text } from '@/components/ui';
 import { colorizeWords, splitWords } from '@/features/quran/tajweed';
+import { toArabicDigits } from '@/lib/digits';
 import { useTheme } from '@/theme/ThemeContext';
 import { space } from '@/theme/tokens';
 
@@ -49,8 +50,8 @@ interface Props {
   activeWordAyah?: number | null;
 }
 
-const FONT_SIZE = 36;
-const LINE_HEIGHT = 64;
+const FONT_SIZE = 28;
+const LINE_HEIGHT = 46;
 const PAGE_BG = '#0A1A14';
 const PAGE_TEXT = '#F5EDDA';
 const MARKER_COLOR = '#C9A227';
@@ -106,9 +107,6 @@ const PAPER_AMOLED: Paper = {
   bg: '#000000',
   frame: '#1C1C1C',
 };
-
-const toArabicDigits = (n: number) =>
-  String(n).replace(/[0-9]/g, (d) => '٠١٢٣٤٥٦٧٨٩'[Number(d)]);
 
 export function MushafReader({
   surahId,
@@ -215,7 +213,7 @@ export function MushafReader({
         : 'transparent';
     const words = splitWords(v.arabic);
     const spans = tajweed ? colorizeWords(words) : null;
-    const verseMarkerInline = `  ${toArabicDigits(v.ayah)}  `;
+    const verseMarkerInline = `\u00A0\u06DD${toArabicDigits(v.ayah)}\u00A0`;
     const base = [
       styles.ayahSpan,
       {
@@ -273,7 +271,7 @@ export function MushafReader({
             );
           })}
           {v.sajda === 1 ? <RNText style={{ color: paper.sajda }}> ۩ </RNText> : null}
-          <RNText style={[styles.inlineMarkerCircle, { color: paper.marker, borderColor: paper.marker, backgroundColor: paper.markerBg }]} onPress={() => onPressAyah(v.ayah)}>
+          <RNText style={[styles.inlineMarkerCircle, { color: paper.marker }]} onPress={() => onPressAyah(v.ayah)}>
             {verseMarkerInline}
           </RNText>
         </RNText>
@@ -299,7 +297,7 @@ export function MushafReader({
             ));
           })}
           {v.sajda === 1 ? <RNText style={{ color: paper.sajda }}> ۩ </RNText> : null}
-          <RNText style={[styles.inlineMarkerCircle, { color: paper.marker, borderColor: paper.marker, backgroundColor: paper.markerBg }]} onPress={() => onPressAyah(v.ayah)}>
+          <RNText style={[styles.inlineMarkerCircle, { color: paper.marker }]} onPress={() => onPressAyah(v.ayah)}>
             {verseMarkerInline}
           </RNText>
         </RNText>
@@ -309,7 +307,7 @@ export function MushafReader({
       <RNText key={v.ayah} style={base} {...pressProps}>
         <RNText style={{ color: paper.text }}>{v.arabic}</RNText>
         {v.sajda === 1 ? <RNText style={{ color: paper.sajda }}> ۩ </RNText> : null}
-        <RNText style={[styles.inlineMarkerCircle, { color: paper.marker, borderColor: paper.marker, backgroundColor: paper.markerBg }]}>
+        <RNText style={[styles.inlineMarkerCircle, { color: paper.marker }]}>
           {verseMarkerInline}
         </RNText>
       </RNText>
@@ -375,7 +373,7 @@ export function MushafReader({
         initialScrollIndex={0}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <View style={[styles.page, { width: pageW }]}>
             <View style={styles.pageFrame}>
               {/* Ornate double-line frame (classic mushaf page border) */}
@@ -396,29 +394,27 @@ export function MushafReader({
                 </View>
               </View>
             </View>
-            {index === lastPage && onNextSurah ? (
-              <Pressable
-                onPress={onNextSurah}
-                style={[styles.nextBtn, { borderColor: paper.chipBorder, backgroundColor: paper.chipBg }]}
-              >
-                <Text variant="bodySmall" font="arabicBold" color="primary">
-                  {t('quran.nextSurah')} {rtl ? '‹' : '›'}
-                </Text>
-              </Pressable>
-            ) : null}
           </View>
         )}
         onScrollToIndexFailed={({ index }) =>
           listRef.current?.scrollToOffset({ offset: index * pageW, animated: false })
         }
       />
-      <View style={styles.footer}>
+      <View style={[styles.footer, { borderTopColor: paper.hairline }]}>
         <Pressable onPress={() => scrollToPage(pageIndex - 1)} hitSlop={10} style={styles.footerBtn} accessibilityLabel={t('quran.prevPage')}>
           <Ionicons name={rtl ? 'chevron-forward' : 'chevron-back'} size={20} color={paper.muted} />
         </Pressable>
-        <Text variant="caption" font="uiBold" style={{ color: paper.muted }}>
-          {toArabicDigits(pages[pageIndex]?.page ?? pages[0]?.page ?? 1)} / {toArabicDigits(pages[pages.length - 1]?.page ?? 1)}
-        </Text>
+        {pageIndex === lastPage && onNextSurah ? (
+          <Pressable onPress={onNextSurah} style={[styles.nextBtn, { borderColor: paper.chipBorder, backgroundColor: paper.chipBg }]}>
+            <Text variant="bodySmall" font="arabicBold" color="primary">
+              {t('quran.nextSurah')} {rtl ? '‹' : '›'}
+            </Text>
+          </Pressable>
+        ) : (
+          <Text variant="caption" font="uiBold" style={{ color: paper.muted }}>
+            {toArabicDigits(pages[pageIndex]?.page ?? pages[0]?.page ?? 1)} / {toArabicDigits(pages[pages.length - 1]?.page ?? 1)}
+          </Text>
+        )}
         <Pressable onPress={() => scrollToPage(pageIndex + 1)} hitSlop={10} style={styles.footerBtn} accessibilityLabel={t('quran.nextPage')}>
           <Ionicons name={rtl ? 'chevron-back' : 'chevron-forward'} size={20} color={paper.muted} />
         </Pressable>
@@ -494,17 +490,10 @@ const styles = StyleSheet.create({
   marker: { fontSize: 15, color: MARKER_COLOR, fontFamily: 'Amiri_700Bold', textAlign: 'center' },
   inlineMarker: { fontSize: FONT_SIZE, color: MARKER_COLOR, fontFamily: 'Amiri_700Bold' },
   inlineMarkerCircle: {
-    fontSize: 14,
+    fontSize: FONT_SIZE - 2,
     color: MARKER_COLOR,
     fontFamily: 'Amiri_700Bold',
-    backgroundColor: 'rgba(201,162,39,0.12)',
-    borderWidth: 1,
-    borderColor: MARKER_COLOR,
-    borderRadius: 14,
-    overflow: 'hidden',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginHorizontal: 2,
+    marginHorizontal: 1,
   },
   wordTap: { borderBottomWidth: 1, borderBottomColor: 'rgba(242,235,216,0.4)', paddingHorizontal: 1, color: PAGE_TEXT },
   hiddenBox: {
@@ -521,20 +510,15 @@ const styles = StyleSheet.create({
     minHeight: LINE_HEIGHT,
   },
   footer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 48,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: space[4],
+    paddingVertical: space[2],
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   footerBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(128,128,128,0.12)' },
   nextBtn: {
-    position: 'absolute',
-    bottom: 58,
-    alignSelf: 'center',
     paddingHorizontal: space[4],
     paddingVertical: space[2],
     borderWidth: StyleSheet.hairlineWidth,
