@@ -16,6 +16,8 @@ import { useTranslation } from 'react-i18next';
 import { Text } from '@/components/ui';
 import type { HighlightColor } from '@/db/userdb';
 import { HIGHLIGHT_WASH } from '@/features/quran/highlights';
+import Animated, { FadeIn } from 'react-native-reanimated';
+
 import { colorizeWords, splitWords } from '@/features/quran/tajweed';
 import { toArabicDigits } from '@/lib/digits';
 import { useTheme } from '@/theme/ThemeContext';
@@ -56,8 +58,8 @@ interface Props {
   activeWordAyah?: number | null;
 }
 
-const FONT_SIZE = 28;
-const LINE_HEIGHT = 46;
+const FONT_SIZE = 27;
+const LINE_HEIGHT = 50;
 const PAGE_BG = '#0A1A14';
 const PAGE_TEXT = '#F5EDDA';
 const MARKER_COLOR = '#C9A227';
@@ -341,14 +343,6 @@ export function MushafReader({
     );
   };
 
-  const renderSurahBanner = (key: string, name: string) => (
-    <View key={key} style={[styles.surahBanner, { borderColor: paper.frame }]}>
-      <View style={[styles.surahBannerInner, { borderColor: paper.frame }]}>
-        <RNText style={[styles.surahBannerText, { color: paper.text }]}>{name}</RNText>
-      </View>
-    </View>
-  );
-
   const renderBismillah = (key: string) => (
     <RNText key={key} style={[styles.bismillah, { color: paper.text }]}>
       {'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'}
@@ -364,7 +358,6 @@ export function MushafReader({
     pageVerses.forEach((v, idx) => {
       if (v.ayah === 1) {
         const s = v.surah ?? surahId;
-        out.push(renderSurahBanner(`sb${s}_${idx}`, v.surahName ?? surahName));
         if (showBismillah && s !== 1 && s !== 9) {
           out.push(renderBismillah(`bi${s}_${idx}`));
         }
@@ -401,31 +394,28 @@ export function MushafReader({
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
         renderItem={({ item }) => (
-          <View style={[styles.page, { width: pageW }]}>
-            {/* classic mushaf header band: surah name in a green cartouche */}
-            <View style={[styles.pageHeader, { backgroundColor: paper.headerBg, borderColor: paper.frameInner }]}>
-              <RNText style={[styles.pageHeaderText, { color: paper.headerText }]}>{item.verses[0]?.surahName ?? surahName}</RNText>
-            </View>
-            <View style={styles.pageFrame}>
-              {/* Ornate double-line frame (classic mushaf page border) */}
-              <View style={[styles.frameOuter, { borderColor: paper.frame }]}>
-                <View style={[styles.frameInner, { borderColor: paper.frameInner }]}>
-                  <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    style={styles.pageBody}
-                    contentContainerStyle={{ paddingBottom: 24 }}
-                  >
-                    {renderPageContent(item.verses)}
-                  </ScrollView>
-                  <View style={[styles.pageFooter, { borderTopColor: paper.frame }]}>
-                    <View style={[styles.pageMedallion, { borderColor: paper.frame, backgroundColor: paper.markerBg }]}>
-                      <RNText style={[styles.pageNumber, { color: paper.marker }]}>{toArabicDigits(item.page)}</RNText>
-                    </View>
-                  </View>
+          <Animated.View entering={FadeIn.duration(220)} style={[styles.page, { width: pageW }]}>
+            <View style={[styles.sheet, { backgroundColor: paper.bg, borderColor: paper.frameInner }]}>
+              {/* surah name cartouche, the only ornament on the page */}
+              <View style={[styles.pageHeader, { backgroundColor: paper.headerBg, borderColor: paper.frameInner }]}>
+                <RNText style={[styles.pageHeaderText, { color: paper.headerText }]}>{
+                  item.verses[0]?.surahName ?? surahName
+                }</RNText>
+              </View>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.pageBody}
+                contentContainerStyle={{ paddingBottom: 16 }}
+              >
+                {renderPageContent(item.verses)}
+              </ScrollView>
+              <View style={[styles.pageFooter, { borderTopColor: paper.hairline }]}>
+                <View style={[styles.pageMedallion, { borderColor: paper.marker, backgroundColor: paper.markerBg }]}>
+                  <RNText style={[styles.pageNumber, { color: paper.marker }]}>{toArabicDigits(item.page)}</RNText>
                 </View>
               </View>
             </View>
-          </View>
+          </Animated.View>
         )}
         onScrollToIndexFailed={({ index }) =>
           listRef.current?.scrollToOffset({ offset: index * pageW, animated: false })
@@ -456,14 +446,21 @@ export function MushafReader({
 
 const styles = StyleSheet.create({
   page: { flex: 1 },
-  pageHeader: {
-    marginHorizontal: 8,
-    marginTop: 6,
-    paddingVertical: 6,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+  sheet: {
+    flex: 1,
+    marginHorizontal: 12,
+    marginVertical: 8,
+    borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth * 2,
-    borderBottomWidth: 0,
+    overflow: 'hidden',
+  },
+  pageHeader: {
+    marginHorizontal: 12,
+    marginTop: 12,
+    marginBottom: 4,
+    paddingVertical: 7,
+    borderRadius: 12,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -474,10 +471,7 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
     textAlign: 'center',
   },
-  pageFrame: { flex: 1, padding: 8 },
-  // Ornate double-line page frame (classic mushaf border).
-  frameOuter: { flex: 1, borderWidth: 3, borderRadius: 3, padding: 3 },
-  frameInner: { flex: 1, borderWidth: 1, borderRadius: 1, overflow: 'hidden' },
+
   // Decorative surah banner box (classic header at the start of a surah).
   surahBanner: {
     borderWidth: 1.5,
@@ -499,10 +493,10 @@ const styles = StyleSheet.create({
   bismillah: { fontSize: 24, lineHeight: 42, fontFamily: 'Amiri_700Bold', textAlign: 'center', marginBottom: 6 },
   pageBody: { flex: 1, paddingHorizontal: 10, paddingTop: 4 },
   pageFooter: {
-    height: 38,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    borderTopWidth: 1,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   pageMedallion: {
     width: 30,

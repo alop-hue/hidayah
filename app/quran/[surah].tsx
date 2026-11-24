@@ -784,7 +784,7 @@ const styles = StyleSheet.create({
   pronBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', padding: space[5] },
   pronCard: { borderRadius: radius.md, borderWidth: 1, paddingHorizontal: space[5], paddingVertical: space[4], alignItems: 'center', gap: space[2], maxWidth: '90%' },
   header: { borderBottomWidth: StyleSheet.hairlineWidth * 2 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', gap: space[2], paddingHorizontal: space[3], paddingVertical: space[2] },
+  headerRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space[2], paddingHorizontal: space[3], paddingVertical: space[2] },
   iconBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   controlsWrap: { paddingBottom: space[2] },
   controls: { flexDirection: 'row', gap: space[4], paddingHorizontal: space[3] },

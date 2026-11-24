@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { Segmented, Text, LoadingState } from '@/components/ui';
+import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 import { getByJuz, getByPage, getSurahs, type SurahRow } from '@/db/queries';
 import { arabicSurahName, surahDisplayName } from '@/features/quran/surahNames';
 import { useSettings } from '@/store/settings';
@@ -97,14 +98,14 @@ export default function QuranTab() {
               renderItem={({ item }) => {
                 const isLast = lastRead?.surah === item.id;
                 return (
-                  <Pressable
+                  <AnimatedPressable
+                    haptic
                     onPress={() => openSurah(item.id)}
-                    style={({ pressed }) => [
+                    style={[
                       styles.surahRow,
                       { borderBottomColor: colors.hairline },
                       rtl && styles.rtlRow,
                       isLast && { backgroundColor: colors.primarySoft },
-                      pressed && { backgroundColor: colors.bgSunken },
                     ]}
                   >
                     <View style={[styles.surahNum, { backgroundColor: colors.primarySoft }]}>
@@ -134,7 +135,7 @@ export default function QuranTab() {
                         {surahDisplayName(item.id, item.name, i18n.language)}
                       </Text>
                     )}
-                  </Pressable>
+                  </AnimatedPressable>
                 );
               }}
             />

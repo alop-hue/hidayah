@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { Text } from '@/components/ui';
+import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 import { DOCK_SPACE } from '@/components/ui/FloatingDock';
 import { getSurah } from '@/db/queries';
 import { toArabicDigits } from '@/lib/digits';
@@ -157,23 +158,23 @@ export default function HomeScreen() {
 
         {/* date + location selector */}
         <View style={styles.selector}>
-          <Pressable
+          <AnimatedPressable
             onPress={() => router.push('/tools/calendar')}
-            style={({ pressed }) => [styles.selectorItem, styles.dateItem, { backgroundColor: colors.bgElevated }, pressed && { opacity: 0.7 }]}
+            style={[styles.selectorItem, styles.dateItem, { backgroundColor: colors.bgElevated }]}
           >
             <Text variant="bodySmall" font="uiBold" numberOfLines={1} style={{ color: colors.text }}>
               {gregorian}
             </Text>
-          </Pressable>
-          <Pressable
+          </AnimatedPressable>
+          <AnimatedPressable
             onPress={() => router.push('/more/settings')}
-            style={({ pressed }) => [styles.selectorItem, styles.locationItem, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}
+            style={[styles.selectorItem, styles.locationItem, { backgroundColor: colors.card }]}
           >
             <Ionicons name="navigate" size={11} color={colors.textSecondary} />
             <Text variant="bodySmall" font="uiBold" numberOfLines={1} style={{ color: colors.text }}>
               {locationLabel}
             </Text>
-          </Pressable>
+          </AnimatedPressable>
         </View>
 
         {/* prayer times card */}
@@ -209,10 +210,11 @@ export default function HomeScreen() {
         </Text>
         <View style={styles.grid}>
           {explore.map((item) => (
-            <Pressable
+            <AnimatedPressable
               key={item.route}
+              haptic
               onPress={() => router.push(item.route as never)}
-              style={({ pressed }) => [styles.tile, { backgroundColor: colors.card }, pressed && { opacity: 0.75 }]}
+              style={[styles.tile, { backgroundColor: colors.card }]}
             >
               <View style={[styles.tileIcon, { backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.05)' : 'rgba(255,255,255,0.06)' }]}>
                 <Ionicons name={item.icon} size={18} color={colors.text} />
@@ -223,7 +225,7 @@ export default function HomeScreen() {
               <Text variant="caption" color="tertiary" numberOfLines={1} style={{ marginTop: 1 }}>
                 {item.hint}
               </Text>
-            </Pressable>
+            </AnimatedPressable>
           ))}
         </View>
       </ScrollView>

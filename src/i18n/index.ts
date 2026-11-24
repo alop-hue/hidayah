@@ -29,7 +29,9 @@ function getDeviceLang(): string {
 }
 
 const deviceLang = getDeviceLang();
-const initialLang = SUPPORTED_LANGS.includes(deviceLang as AppLang) ? deviceLang : 'en';
+// Arabic-first: honour the device language when we ship it, otherwise start in
+// Arabic rather than English.
+const initialLang = SUPPORTED_LANGS.includes(deviceLang as AppLang) ? (deviceLang as AppLang) : 'ar';
 
 export function changeLanguage(lang: AppLang) {
   i18n.changeLanguage(lang);
@@ -50,6 +52,6 @@ export function initI18n(persistedLang: string | null) {
     lng: lang,
     fallbackLng: 'en',
     compatibilityJSON: 'v4',
-    interpolation: { escapeValue: false, prefix: '{', suffix: '}' },
+    interpolation: { escapeValue: false },
   });
 }

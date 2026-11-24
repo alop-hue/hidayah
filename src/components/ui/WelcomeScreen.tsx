@@ -1,33 +1,53 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { Text } from '@/components/ui';
-import { useSettings } from '@/store/settings';
+import { changeLanguage, SUPPORTED_LANGS, type AppLang } from '@/i18n';
+import { LANG_EDITIONS, useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
 import { radius, space } from '@/theme/tokens';
 
-type Step = 'welcome' | 'reading' | 'goal' | 'reminders';
+type Step = 'language' | 'reading' | 'goal' | 'reminders';
+
+const LANGUAGES: { code: AppLang; native: string }[] = [
+  { code: 'ar', native: 'العربية' },
+  { code: 'en', native: 'English' },
+  { code: 'tr', native: 'Türkçe' },
+  { code: 'id', native: 'Bahasa Indonesia' },
+  { code: 'ur', native: 'اردو' },
+  { code: 'fr', native: 'Français' },
+  { code: 'de', native: 'Deutsch' },
+];
 
 /**
  * First-open welcome + personalization quiz.
- * Every answer writes to the real settings store, so the choices actually
- * shape the app (translation visibility, daily goal, prayer reminders).
+ * The first answer picks the language, so every following question is shown
+ * in the user's own language. Every answer writes to the real settings store,
+ * so the choices actually shape the app.
  */
 export function WelcomeScreen({ onDone }: { onDone: () => void }) {
   const { t, i18n } = useTranslation();
   const { colors, mode } = useTheme();
   const insets = useSafeAreaInsets();
-  const { setShowTranslation, setDailyWird, setPrayer } = useSettings();
-  const [step, setStep] = useState<Step>('welcome');
-  const [reading, setReading] = useState<'ar' | 'both'>(i18n.language.startsWith('ar') ? 'both' : 'both');
+  const { setShowTranslation, setDefaultTranslation, setDailyWird, setPrayer, setLanguage } = useSettings();
+  const [step, setStep] = useState<Step>('language');
+  const [lang, setLang] = useState<AppLang>(i18n.language.split('-')[0] as AppLang);
+  const [reading, setReading] = useState<'ar' | 'en' | 'app'>('en');
   const [goal, setGoal] = useState(4);
 
+  const pickLanguage = (code: AppLang) => {
+    setLang(code);
+    changeLanguage(code);
+  };
+
   const finish = async () => {
-    setShowTranslation(reading === 'both');
+    setShowTranslation(reading !== 'ar');
+    if (reading === 'en') setDefaultTranslation('en');
+    else if (reading === 'app') setDefaultTranslation(LANG_EDITIONS[lang] ?? 'en');
     setDailyWird({ enabled: true, goal: 'pages', target: goal });
     setPrayer({ notificationsEnabled: true });
     try {
@@ -39,19 +59,21 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
   };
 
   const skip = () => {
+    setShowTranslation(true);
     setDailyWird({ enabled: true, goal: 'pages', target: 4 });
     onDone();
   };
 
   const next = () => {
-    if (step === 'welcome') setStep('reading');
+    if (step === 'language') setStep('reading');
     else if (step === 'reading') setStep('goal');
     else if (step === 'goal') setStep('reminders');
     else void finish();
   };
 
-  const dots = ['welcome', 'reading', 'goal', 'reminders'];
+  const dots: Step[] = ['language', 'reading', 'goal', 'reminders'];
   const activeIndex = dots.indexOf(step);
+  const langName = LANGUAGES.find((l) => l.code === lang)?.native ?? 'English';
 
   const option = (label: string, selected: boolean, onPress: () => void, icon?: keyof typeof Ionicons.glyphMap) => (
     <Pressable
@@ -81,7 +103,7 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
-          paddingTop: insets.top + space[8],
+          paddingTop: insets.top + space[7],
           paddingBottom: insets.bottom + space[6],
           paddingHorizontal: space[6],
           justifyContent: 'space-between',
@@ -90,7 +112,7 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
       >
         <View style={{ alignItems: 'center' }}>
           <View style={[styles.mark, { borderColor: colors.hairline, backgroundColor: colors.card }]}>
-            <Ionicons name="moon" size={26} color={colors.text} />
+            <Image source={require('../../../assets/images/icon.png')} style={styles.markImage} />
           </View>
           <Text variant="display" font="uiBold" style={{ marginTop: space[5], letterSpacing: -0.5 }}>
             Hidayah
@@ -103,11 +125,16 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
           </Text>
         </View>
 
-        <View style={{ marginTop: space[8] }}>
-          {step === 'welcome' ? (
-            <Text variant="heading" font="uiBold" style={{ textAlign: 'center' }}>
-              {t('welcome.q1')}
-            </Text>
+        <View style={{ marginTop: space[7] }}>
+          {step === 'language' ? (
+            <View style={{ gap: space[2] }}>
+              <Text variant="heading" font="uiBold" style={{ marginBottom: space[3] }}>
+                {t('welcome.lang')}
+              </Text>
+              {LANGUAGES.map((l) =>
+                option(l.native, lang === l.code, () => pickLanguage(l.code), l.code === 'ar' ? 'language' : 'globe-outline'),
+              )}
+            </View>
           ) : null}
 
           {step === 'reading' ? (
@@ -116,7 +143,15 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
                 {t('welcome.q1')}
               </Text>
               {option(t('welcome.q1a'), reading === 'ar', () => setReading('ar'), 'book-outline')}
-              {option(t('welcome.q1b'), reading === 'both', () => setReading('both'), 'albums-outline')}
+              {option(
+                t('welcome.q1b', { language: langName }),
+                reading === 'app',
+                () => setReading('app'),
+                'albums-outline',
+              )}
+              {lang !== 'en'
+                ? option(t('welcome.q1c'), reading === 'en', () => setReading('en'), 'language-outline')
+                : null}
             </View>
           ) : null}
 
@@ -142,7 +177,7 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
           ) : null}
         </View>
 
-        <View style={{ marginTop: space[8] }}>
+        <View style={{ marginTop: space[7] }}>
           <View style={styles.dots}>
             {dots.map((d, i) => (
               <View
@@ -177,19 +212,21 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
 
 const styles = StyleSheet.create({
   mark: {
-    width: 68,
-    height: 68,
+    width: 72,
+    height: 72,
     borderRadius: 22,
     borderWidth: StyleSheet.hairlineWidth * 2,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
+  markImage: { width: 64, height: 64, borderRadius: 20 },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space[3],
     paddingHorizontal: space[4],
-    paddingVertical: space[4],
+    paddingVertical: space[3] + 2,
     borderRadius: radius.lg,
     borderWidth: StyleSheet.hairlineWidth * 2,
   },

@@ -17,6 +17,7 @@ export default function TabsLayout() {
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           headerShown: false,
+          animation: 'fade',
         }}
       >
         <Tabs.Screen name="index" options={{ title: 'home' }} />
