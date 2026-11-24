@@ -50,9 +50,16 @@ export function CustomTabBar({ state, navigation }: any) {
         accessibilityRole="button"
         accessibilityState={{ selected: focused }}
         accessibilityLabel={t(tab.labelKey)}
-        style={styles.tab}
+        style={[
+          styles.tab,
+          focused && {
+            backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.06)' : 'rgba(255,255,255,0.10)',
+            borderColor: mode === 'light' ? 'rgba(14,15,17,0.05)' : 'rgba(255,255,255,0.05)',
+            borderWidth: StyleSheet.hairlineWidth,
+          },
+        ]}
       >
-        <View style={[styles.iconCapsule, focused && { backgroundColor: colors.primarySoft }]}>
+        <View style={styles.iconCapsule}>
           <DockIcon name={tab.icon} color={color} active={focused} />
         </View>
         <Text variant="micro" font="uiBold" style={{ color, marginTop: 3 }} numberOfLines={1}>
@@ -124,12 +131,18 @@ const styles = StyleSheet.create({
     height: StyleSheet.hairlineWidth * 2,
     opacity: 0.8,
   },
-  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space[2], paddingTop: 7, paddingBottom: 6 },
-  tab: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space[2], paddingVertical: 5 },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 7,
+    borderRadius: 26,
+    overflow: 'hidden',
+  },
   iconCapsule: {
     width: 46,
-    height: 30,
-    borderRadius: radius.pill,
+    height: 26,
     alignItems: 'center',
     justifyContent: 'center',
   },
