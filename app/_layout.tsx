@@ -8,6 +8,7 @@ import { I18nManager, StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 
 import { Button, LoadingState, Text } from '@/components/ui';
+import { WelcomeScreen } from '@/components/ui/WelcomeScreen';
 import { ensureDatabase } from '@/db/database';
 import { initI18n, isRtl, i18n } from '@/i18n';
 import { installErrorListener } from '@/services/diagnostics';
@@ -46,7 +47,7 @@ function GateScreen({ gate, retry }: { gate: Exclude<GateState, 'ready'>; retry:
       ) : (
         <View style={{ alignItems: 'center', gap: 8 }}>
           <Text variant="display" font="arabicBold">
-            نور
+            هداية
           </Text>
           <LoadingState
             label={gate === 'unpacking' ? 'Preparing the sacred texts…' : 'Indexing for search…'}
@@ -101,6 +102,15 @@ function Providers() {
     return 'unpacking';
   });
   const [attempt, setAttempt] = useState(0);
+  const onBoarded = useSettings((s) => s.onBoarded);
+  const setOnBoarded = useSettings((s) => s.setOnBoarded);
+  const [hydrated, setHydrated] = useState(() => useSettings.persist.hasHydrated());
+
+  useEffect(() => {
+    const unsub = useSettings.persist.onFinishHydration(() => setHydrated(true));
+    setHydrated(useSettings.persist.hasHydrated());
+    return unsub;
+  }, []);
 
   useEffect(() => {
     applyRtl(language);
@@ -139,6 +149,10 @@ function Providers() {
     <ThemeProvider preference={theme} setPreference={setTheme}>
       {gate !== 'ready' ? (
         <GateScreen gate={gate} retry={() => setAttempt((a) => a + 1)} />
+      ) : !hydrated ? (
+        <View style={[styles.gate, { backgroundColor: '#050607' }]} />
+      ) : !onBoarded ? (
+        <WelcomeScreen onDone={() => setOnBoarded(true)} />
       ) : (
         <AppShell />
       )}
@@ -162,5 +176,5 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  gate: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#0B3D35' },
+  gate: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#050607' },
 });

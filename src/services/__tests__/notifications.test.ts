@@ -34,6 +34,16 @@ jest.mock('expo-intent-launcher', () => ({
   startActivityAsync: jest.fn(async () => undefined),
 }));
 
+jest.mock('../../../modules/athan-alarms', () => ({
+  isAthanAlarmsAvailable: false,
+  canScheduleExactAthanAlarms: () => false,
+  scheduleAthanAlarms: jest.fn(async () => 0),
+  cancelAthanAlarms: jest.fn(async () => undefined),
+  playAthanNow: jest.fn(async () => undefined),
+  playAthanIn: jest.fn(async () => undefined),
+  stopAthan: jest.fn(async () => undefined),
+}));
+
 jest.mock('expo-constants', () => ({
   default: { expoConfig: { android: { package: 'com.noor.quran' }, name: 'Noor' } },
 }));

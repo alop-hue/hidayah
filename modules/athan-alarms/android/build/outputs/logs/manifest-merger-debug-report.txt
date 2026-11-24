@@ -1,0 +1,76 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:1:1-29:12
+INJECTED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:1:1-29:12
+	package
+		INJECTED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:1:11-69
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:2:3-75
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:2:20-72
+uses-permission#android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:3:3-90
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:3:20-87
+uses-permission#android.permission.WAKE_LOCK
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:4:3-66
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:4:20-63
+uses-permission#android.permission.RECEIVE_BOOT_COMPLETED
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:5:3-79
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:5:20-76
+uses-permission#android.permission.SCHEDULE_EXACT_ALARM
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:6:3-77
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:6:20-74
+application
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:8:3-28:17
+service#expo.modules.athanalarms.AthanService
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:9:5-12:55
+	android:exported
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:11:7-31
+	android:foregroundServiceType
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:12:7-52
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:10:7-35
+receiver#expo.modules.athanalarms.AthanAlarmReceiver
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:14:5-16:34
+	android:exported
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:16:7-31
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:15:7-41
+receiver#expo.modules.athanalarms.AthanBootReceiver
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:18:5-27:16
+	android:exported
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:20:7-30
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:19:7-40
+intent-filter#action:name:android.intent.action.BOOT_COMPLETED+action:name:android.intent.action.MY_PACKAGE_REPLACED+action:name:android.intent.action.TIMEZONE_CHANGED+action:name:android.intent.action.TIME_SET
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:21:7-26:23
+action#android.intent.action.BOOT_COMPLETED
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:22:9-71
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:22:17-68
+action#android.intent.action.MY_PACKAGE_REPLACED
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:23:9-76
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:23:17-73
+action#android.intent.action.TIME_SET
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:24:9-65
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:24:17-62
+action#android.intent.action.TIMEZONE_CHANGED
+ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:25:9-73
+	android:name
+		ADDED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml:25:17-70
+uses-sdk
+INJECTED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml
+INJECTED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /home/alopesclop/Desktop/About me/FOR WORK/projects/mobile apps/quran-app/islamic-app/modules/athan-alarms/android/src/main/AndroidManifest.xml

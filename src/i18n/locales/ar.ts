@@ -4,9 +4,31 @@ const ar: Translation = {
   appName: 'نور',
   appTagline: 'القرآن · الصلاة · الذكر',
 
-  tabs: { home: 'الرئيسية', quran: 'القرآن', hadith: 'الحديث', tools: 'أدوات', more: 'المزيد' },
+  tabs: { home: 'الرئيسية', quran: 'القرآن', hadith: 'الحديث', tools: 'أدوات', more: 'المزيد', qibla: 'القبلة', dhikr: 'الذكر', settings: 'الإعدادات' },
+
+  welcome: {
+    tagline: 'هداية، آيةً بعد آية.',
+    q1: 'كيف تحب أن تقرأ؟',
+    q1a: 'العربية فقط',
+    q1b: 'العربية مع الترجمة',
+    q2: 'حدّد هدف القراءة اليومي',
+    q2a: 'صفحة واحدة',
+    q2b: '٤ صفحات',
+    q2c: 'جزء واحد',
+    q3: 'تذكيرات الصلاة',
+    q3a: 'تفعيل الإشعارات',
+    q3b: 'ليس الآن',
+    next: 'متابعة',
+    start: 'ابدأ',
+    skip: 'تخطٍّ',
+  },
 
   home: {
+    explore: 'استكشف',
+    prayerAt: '{{prayer}} في {{time}}',
+    hadithHint: '٩ مجموعات',
+    memorizeHint: 'تابع حفظك',
+    mosqueHint: 'المساجد القريبة',
     greetingMorning: 'صباح الخير',
     greetingAfternoon: 'طاب يومك',
     greetingEvening: 'مساء الخير',
@@ -29,6 +51,13 @@ const ar: Translation = {
   },
 
   quran: {
+    highlight: 'تمييز',
+    highlightSage: 'أخضر',
+    highlightGold: 'ذهبي',
+    highlightSky: 'سماوي',
+    highlightRose: 'وردي',
+    highlightLilac: 'بنفسجي',
+    highlightRemove: 'إزالة التمييز',
     title: 'القرآن',
     search: 'ابحث في القرآن',
     searchHint: 'سورة، آية، كلمة…',

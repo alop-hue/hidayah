@@ -3,6 +3,13 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
+import {
+  isAthanAlarmsAvailable,
+  playAthanIn,
+  playAthanNow,
+  scheduleAthanAlarms,
+  cancelAthanAlarms,
+} from '../../modules/athan-alarms';
 import type { AdhanSound, PrayerName } from '../store/settings';
 
 const CHANNEL_PRAYER = 'prayer';
@@ -42,6 +49,19 @@ function soundFile(sound: AdhanSound): string | undefined {
   if (sound === 'custom') return 'default';
   return ADHAN_SOUND_FILES[sound];
 }
+
+/**
+ * res/raw resource name for a bundled athan, or null when the sound is not a
+ * full recording (default system tone, silent, or an unsupported custom file).
+ * Notification channel sounds are truncated by Android after a few seconds, so
+ * full athans are played by the native foreground service instead.
+ */
+export function athanResource(sound: AdhanSound): string | null {
+  if (sound === 'silent' || sound === 'default' || sound === 'custom') return null;
+  return ADHAN_SOUND_FILES[sound].replace(/\.mp3$/, '');
+}
+
+const useNativeAthan = (): boolean => Platform.OS === 'android' && isAthanAlarmsAvailable;
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -178,6 +198,11 @@ export async function sendTestNotification(title: string, body: string): Promise
 }
 
 export async function sendTestAdhan(sound: AdhanSound, title: string, body: string): Promise<void> {
+  const resource = athanResource(sound);
+  if (useNativeAthan() && resource) {
+    await playAthanNow(resource, title);
+    return;
+  }
   const channelId = channelFor(sound);
   await Notifications.scheduleNotificationAsync({
     content: {
@@ -197,6 +222,11 @@ export async function sendDelayedTestNotification(
   seconds: number,
   sound: AdhanSound = 'makkah',
 ): Promise<string> {
+  const resource = athanResource(sound);
+  if (useNativeAthan() && resource) {
+    await playAthanIn(seconds, resource, title);
+    return `athan-${Date.now()}`;
+  }
   const date = new Date(Date.now() + Math.max(1, seconds) * 1000);
   const channelId = channelFor(sound);
   return Notifications.scheduleNotificationAsync({
@@ -237,6 +267,7 @@ export async function resyncPrayerNotifications(
   const { prayer } = (await import('../store/settings')).useSettings.getState();
   if (!prayer.notificationsEnabled || !prayer.coords) {
     await cancelAllPrayerReminders();
+    if (useNativeAthan()) await cancelAthanAlarms();
     return 0;
   }
   const { computePrayerTimes, PRAYER_NAMES } = await import('./prayer');
@@ -249,5 +280,23 @@ export async function resyncPrayerNotifications(
     const d = new Date(times[name].getTime() + offset * 60000);
     reminders.push({ prayer: name, hour: d.getHours(), minute: d.getMinutes(), sound: pref.sound, label: labelFor(name) });
   }
-  return rescheduleAllPrayerReminders(reminders);
+  const nativeReminders = useNativeAthan() ? reminders.filter((r) => athanResource(r.sound)) : [];
+  const expoReminders = reminders.filter((r) => !nativeReminders.includes(r));
+
+  let nativeCount = 0;
+  if (nativeReminders.length > 0) {
+    nativeCount = await scheduleAthanAlarms(
+      nativeReminders.map((r) => ({
+        prayer: r.prayer,
+        hour: r.hour,
+        minute: r.minute,
+        sound: athanResource(r.sound),
+        label: r.label,
+      })),
+    );
+  } else if (useNativeAthan()) {
+    await cancelAthanAlarms();
+  }
+
+  return (await rescheduleAllPrayerReminders(expoReminders)) + nativeCount;
 }

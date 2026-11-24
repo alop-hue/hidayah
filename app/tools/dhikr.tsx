@@ -38,7 +38,7 @@ function arabicSource(src: string): string {
   return out;
 }
 
-export default function DhikrScreen() {
+export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {}) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -83,9 +83,13 @@ export default function DhikrScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
       <View style={[styles.header, { flexDirection: rtl ? 'row-reverse' : 'row' }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8} accessibilityLabel={t('common.back')}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
+        {inTab ? (
+          <View style={{ width: 24 }} />
+        ) : (
+          <Pressable onPress={() => router.back()} hitSlop={8} accessibilityLabel={t('common.back')}>
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
+          </Pressable>
+        )}
         <Text variant="subheading" font="uiBold">{t('tools.dhikr')}</Text>
         <Pressable onPress={resetAll} hitSlop={8} accessibilityLabel={t('dhikr.reset')}>
           <Ionicons name="refresh" size={22} color={colors.textSecondary} />
@@ -106,7 +110,7 @@ export default function DhikrScreen() {
         <FlatList showsVerticalScrollIndicator={false}
           data={items}
           keyExtractor={(a) => String(a.id)}
-          contentContainerStyle={{ paddingBottom: insets.bottom + space[8], paddingHorizontal: space[4] }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + (inTab ? 132 : space[8]), paddingHorizontal: space[4] }}
           renderItem={({ item }) => {
             const done = (counts[item.id] ?? 0) >= item.count;
             return (

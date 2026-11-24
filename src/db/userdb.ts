@@ -21,6 +21,14 @@ async function getDb(): Promise<SQLiteDatabase> {
       created_at INTEGER NOT NULL,
       UNIQUE(book_slug, hadith_id)
     );
+    CREATE TABLE IF NOT EXISTS highlights(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      surah INTEGER NOT NULL,
+      ayah INTEGER NOT NULL,
+      color TEXT NOT NULL,
+      updated_at INTEGER NOT NULL,
+      UNIQUE(surah, ayah)
+    );
     CREATE TABLE IF NOT EXISTS notes(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       surah INTEGER NOT NULL,
@@ -105,6 +113,49 @@ export async function toggleAyahBookmark(surah: number, ayah: number): Promise<b
 export async function getAyahBookmarks(): Promise<AyahBookmark[]> {
   const d = await getDb();
   return d.getAllAsync<AyahBookmark>('SELECT surah, ayah, created_at FROM bookmarks_ayah ORDER BY created_at DESC');
+}
+
+export type HighlightColor = 'sage' | 'gold' | 'sky' | 'rose' | 'lilac';
+
+export interface AyahHighlight {
+  surah: number;
+  ayah: number;
+  color: HighlightColor;
+  updated_at: number;
+}
+
+export async function setAyahHighlight(
+  surah: number,
+  ayah: number,
+  color: HighlightColor | null,
+): Promise<void> {
+  const d = await getDb();
+  if (!color) {
+    await d.runAsync('DELETE FROM highlights WHERE surah = ? AND ayah = ?', surah, ayah);
+    return;
+  }
+  await d.runAsync(
+    `INSERT INTO highlights (surah, ayah, color, updated_at) VALUES (?, ?, ?, ?)
+     ON CONFLICT(surah, ayah) DO UPDATE SET color = excluded.color, updated_at = excluded.updated_at`,
+    surah,
+    ayah,
+    color,
+    Date.now(),
+  );
+}
+
+export async function getSurahHighlights(surah: number): Promise<Record<number, HighlightColor>> {
+  const d = await getDb();
+  const rows = await d.getAllAsync<{ ayah: number; color: HighlightColor }>(
+    'SELECT ayah, color FROM highlights WHERE surah = ?',
+    surah,
+  );
+  return Object.fromEntries(rows.map((r) => [r.ayah, r.color]));
+}
+
+export async function getAllHighlights(): Promise<AyahHighlight[]> {
+  const d = await getDb();
+  return d.getAllAsync<AyahHighlight>('SELECT surah, ayah, color, updated_at FROM highlights ORDER BY updated_at DESC');
 }
 
 export interface HadithBookmark {
@@ -224,5 +275,10 @@ export async function exportUserData(): Promise<string> {
   const hadithBookmarks = await d.getAllAsync<HadithBookmark>('SELECT * FROM bookmarks_hadith ORDER BY id');
   const notes = await getAllNotes();
   const memorized = await getMemorizedAyahs();
-  return JSON.stringify({ exportedAt: new Date().toISOString(), bookmarks, hadithBookmarks, notes, memorized }, null, 2);
+  const highlights = await getAllHighlights();
+  return JSON.stringify(
+    { exportedAt: new Date().toISOString(), bookmarks, hadithBookmarks, notes, memorized, highlights },
+    null,
+    2,
+  );
 }

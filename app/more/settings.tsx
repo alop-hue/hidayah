@@ -21,7 +21,7 @@ const LANG_NAMES: Record<string, string> = {
   de: 'Deutsch',
 };
 
-export default function SettingsScreen() {
+export default function SettingsScreen({ inTab = false }: { inTab?: boolean } = {}) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -33,14 +33,18 @@ export default function SettingsScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
       <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
+        {inTab ? (
+          <View style={{ width: 24 }} />
+        ) : (
+          <Pressable onPress={() => router.back()} hitSlop={8}>
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
+          </Pressable>
+        )}
         <Text variant="subheading" font="uiBold">{t('settings.title')}</Text>
         <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: space[3], paddingBottom: insets.bottom + space[8] }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: space[3], paddingBottom: insets.bottom + (inTab ? 132 : space[8]) }}>
 
       <SectionLabel>{t('settings.appearance')}</SectionLabel>
       <ListRow

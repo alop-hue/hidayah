@@ -4,9 +4,31 @@ const id: Translation = {
   appName: 'Noor',
   appTagline: 'Al-Qur\'an · Shalat · Zikir',
 
-  tabs: { home: 'Beranda', quran: 'Al-Qur\'an', hadith: 'Hadis', tools: 'Alat', more: 'Lainnya' },
+  tabs: { home: 'Beranda', quran: 'Al-Qur\'an', hadith: 'Hadis', tools: 'Alat', more: 'Lainnya', qibla: 'Kiblat', dhikr: 'Zikir', settings: 'Pengaturan' },
+
+  welcome: {
+    tagline: 'Petunjuk, ayat demi ayat.',
+    q1: 'Bagaimana Anda ingin membaca?',
+    q1a: 'Hanya Arab',
+    q1b: 'Arab dengan terjemahan',
+    q2: 'Target bacaan harian',
+    q2a: '1 halaman',
+    q2b: '4 halaman',
+    q2c: '1 juz',
+    q3: 'Pengingat shalat',
+    q3a: 'Aktifkan notifikasi',
+    q3b: 'Nanti saja',
+    next: 'Lanjut',
+    start: 'Mulai',
+    skip: 'Lewati',
+  },
 
   home: {
+    explore: 'Jelajahi',
+    prayerAt: '{{prayer}} pukul {{time}}',
+    hadithHint: '9 koleksi',
+    memorizeHint: 'Lacak hafalanmu',
+    mosqueHint: 'Masjid terdekat',
     greetingMorning: 'Selamat pagi',
     greetingAfternoon: 'Selamat siang',
     greetingEvening: 'Selamat malam',
@@ -29,6 +51,13 @@ const id: Translation = {
   },
 
   quran: {
+    highlight: 'Sorot',
+    highlightSage: 'Sage',
+    highlightGold: 'Emas',
+    highlightSky: 'Langit',
+    highlightRose: 'Mawar',
+    highlightLilac: 'Lila',
+    highlightRemove: 'Hapus sorotan',
     title: 'Al-Qur\'an',
     search: 'Cari di Al-Qur\'an',
     searchHint: 'Surah, ayat, kata…',

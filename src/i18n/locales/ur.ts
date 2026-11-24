@@ -4,9 +4,31 @@ const ur: Translation = {
   appName: 'نور',
   appTagline: 'قرآن · نماز · ذکر',
 
-  tabs: { home: 'ہوم', quran: 'قرآن', hadith: 'حدیث', tools: 'آلات', more: 'مزید' },
+  tabs: { home: 'ہوم', quran: 'قرآن', hadith: 'حدیث', tools: 'آلات', more: 'مزید', qibla: 'قبلہ', dhikr: 'ذکر', settings: 'ترتیبات' },
+
+  welcome: {
+    tagline: 'ہدایت، ایک آیت کے ساتھ۔',
+    q1: 'آپ کیسے پڑھنا چاہتے ہیں؟',
+    q1a: 'صرف عربی',
+    q1b: 'عربی اور ترجمہ',
+    q2: 'روزانہ پڑھنے کا ہدف',
+    q2a: 'ایک صفحہ',
+    q2b: 'چار صفحات',
+    q2c: 'ایک جزء',
+    q3: 'نماز کی یاد دہانی',
+    q3a: 'اطلاعات فعال کریں',
+    q3b: 'ابھی نہیں',
+    next: 'جاری رکھیں',
+    start: 'شروع کریں',
+    skip: 'چھوڑ دیں',
+  },
 
   home: {
+    explore: 'دریافت کریں',
+    prayerAt: '{{prayer}} {{time}}',
+    hadithHint: '۹ مجموعے',
+    memorizeHint: 'حفظ کی پیش رفت',
+    mosqueHint: 'قریبی مساجد',
     greetingMorning: 'صبح بخیر',
     greetingAfternoon: 'دن بخیر',
     greetingEvening: 'شام بخیر',
@@ -29,6 +51,13 @@ const ur: Translation = {
   },
 
   quran: {
+    highlight: 'نمایاں کریں',
+    highlightSage: 'سبز',
+    highlightGold: 'سنہری',
+    highlightSky: 'آسمانی',
+    highlightRose: 'گلابی',
+    highlightLilac: 'بنفشی',
+    highlightRemove: 'نمایاں ہٹائیں',
     title: 'قرآن',
     search: 'قرآن میں تلاش کریں',
     searchHint: 'سورہ، آیت، لفظ…',

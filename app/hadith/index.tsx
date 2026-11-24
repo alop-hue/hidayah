@@ -178,5 +178,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rtlTitle: { textAlign: 'right', direction: 'rtl' },
+  rtlTitle: { textAlign: 'right', writingDirection: 'rtl' },
 });

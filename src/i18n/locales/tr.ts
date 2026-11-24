@@ -4,9 +4,31 @@ const tr: Translation = {
   appName: 'Noor',
   appTagline: 'Kur\'an · Namaz · Zikir',
 
-  tabs: { home: 'Ana Sayfa', quran: 'Kur\'an', hadith: 'Hadis', tools: 'Araçlar', more: 'Daha Fazla' },
+  tabs: { home: 'Ana Sayfa', quran: 'Kur\'an', hadith: 'Hadis', tools: 'Araçlar', more: 'Daha Fazla', qibla: 'Kıble', dhikr: 'Zikir', settings: 'Ayarlar' },
+
+  welcome: {
+    tagline: 'Her ayet bir rehber.',
+    q1: 'Nasıl okumak istersin?',
+    q1a: 'Sadece Arapça',
+    q1b: 'Arapça ve meal',
+    q2: 'Günlük okuma hedefi',
+    q2a: '1 sayfa',
+    q2b: '4 sayfa',
+    q2c: '1 cüz',
+    q3: 'Namaz hatırlatıcıları',
+    q3a: 'Bildirimleri aç',
+    q3b: 'Şimdi değil',
+    next: 'Devam',
+    start: 'Başla',
+    skip: 'Geç',
+  },
 
   home: {
+    explore: 'Keşfet',
+    prayerAt: '{{prayer}} {{time}}',
+    hadithHint: '9 koleksiyon',
+    memorizeHint: 'İlerlemeni takip et',
+    mosqueHint: 'Yakındaki camiler',
     greetingMorning: 'Günaydın',
     greetingAfternoon: 'Tünaydın',
     greetingEvening: 'İyi akşamlar',
@@ -29,6 +51,13 @@ const tr: Translation = {
   },
 
   quran: {
+    highlight: 'Vurgula',
+    highlightSage: 'Adaçayı',
+    highlightGold: 'Altın',
+    highlightSky: 'Gök',
+    highlightRose: 'Gül',
+    highlightLilac: 'Lila',
+    highlightRemove: 'Vurguyu kaldır',
     title: 'Kur\'an',
     search: 'Kur\'an\'da ara',
     searchHint: 'Sûre, ayet, kelime…',

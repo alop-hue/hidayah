@@ -1,22 +1,23 @@
 /**
- * Noor design tokens.
- * Palette: deep emerald + warm sand, restrained gold accent.
- * Surfaces are flat with 1px hairline borders; shadows reserved for real elevation.
+ * Hidayah design tokens.
+ * Liquid-glass system: OLED black canvas, layered translucent surfaces,
+ * one restrained sage accent, generous radii. Light theme mirrors the same
+ * hierarchy on warm paper.
  */
 
 export const palette = {
-  emerald: {
-    950: '#07231F',
-    900: '#0B3D35',
-    800: '#0F4A40',
-    700: '#135C50',
-    600: '#18705F',
-    500: '#1E8C78',
-    400: '#35A88F',
-    300: '#6FC4B0',
-    200: '#A9DCCE',
-    100: '#D8EFE7',
-    50: '#EFF8F4',
+  sage: {
+    950: '#0E1A15',
+    900: '#15261F',
+    800: '#1E352B',
+    700: '#2C4C3E',
+    600: '#3D6654',
+    500: '#55836C',
+    400: '#7FA890',
+    300: '#A5C6B2',
+    200: '#C7DED1',
+    100: '#E2EEE7',
+    50: '#F1F7F3',
   },
   sand: {
     500: '#C9A227',
@@ -27,25 +28,25 @@ export const palette = {
     50: '#FAF6EC',
   },
   neutral: {
-    950: '#101413',
-    900: '#1B2221',
-    800: '#2A3331',
-    700: '#3D4845',
-    600: '#55615E',
-    500: '#6E7A77',
-    400: '#8E9A96',
-    300: '#B4BDB9',
-    200: '#D3D9D6',
-    100: '#E6EAE8',
-    50: '#F5F7F6',
+    950: '#08090A',
+    900: '#101113',
+    800: '#17191C',
+    700: '#212428',
+    600: '#2E3237',
+    500: '#4A5057',
+    400: '#6E757D',
+    300: '#9AA1A9',
+    200: '#C4C9CE',
+    100: '#E4E7EA',
+    50: '#F4F5F6',
   },
-  paper: '#FAF7F0',
-  ink: '#1B2221',
-  night: '#0C1210',
+  paper: '#F6F5F1',
+  ink: '#0E0F11',
+  night: '#050607',
   black: '#000000',
   white: '#FFFFFF',
-  danger: '#B34A3F',
-  warning: '#A67C14',
+  danger: '#D9695D',
+  warning: '#D9B45C',
 };
 
 export type ThemeMode = 'light' | 'dark' | 'amoled';
@@ -71,6 +72,11 @@ export interface ThemeColors {
   warning: string;
   success: string;
   overlay: string;
+  /** Floating nav / control surface (translucent where blur is available). */
+  glass: string;
+  glassBorder: string;
+  /** Selected verse / active playback wash. */
+  activeWash: string;
   quranText: string;
   tajweed: {
     madd: string;
@@ -86,23 +92,26 @@ const light: ThemeColors = {
   mode: 'light',
   bg: palette.paper,
   bgElevated: '#FFFFFF',
-  bgSunken: '#F1EBDE',
+  bgSunken: '#ECEBE6',
   card: '#FFFFFF',
   text: palette.ink,
-  textSecondary: palette.neutral[600],
-  textTertiary: palette.neutral[400],
-  textOnEmphasis: palette.paper,
-  primary: palette.emerald[800],
-  primarySoft: palette.emerald[50],
+  textSecondary: '#5D6469',
+  textTertiary: '#8E969C',
+  textOnEmphasis: '#FFFFFF',
+  primary: '#22493A',
+  primarySoft: 'rgba(34,73,58,0.07)',
   accent: palette.sand[500],
-  accentSoft: palette.sand[100],
-  hairline: 'rgba(16,20,19,0.10)',
-  hairlineStrong: 'rgba(16,20,19,0.22)',
-  placeholder: palette.neutral[300],
-  danger: palette.danger,
-  warning: palette.warning,
-  success: palette.emerald[500],
+  accentSoft: 'rgba(201,162,39,0.12)',
+  hairline: 'rgba(14,15,17,0.08)',
+  hairlineStrong: 'rgba(14,15,17,0.18)',
+  placeholder: '#B3B8BC',
+  danger: '#B3453A',
+  warning: '#A67C14',
+  success: '#2F6B52',
   overlay: 'rgba(255,255,255,0.92)',
+  glass: 'rgba(255,255,255,0.72)',
+  glassBorder: 'rgba(14,15,17,0.07)',
+  activeWash: 'rgba(34,73,58,0.07)',
   quranText: '#201B10',
   tajweed: {
     madd: '#C0392B',
@@ -116,25 +125,28 @@ const light: ThemeColors = {
 
 const dark: ThemeColors = {
   mode: 'dark',
-  bg: palette.night,
-  bgElevated: '#101713',
-  bgSunken: '#0A0F0D',
-  card: '#101713',
-  text: '#E8ECE9',
-  textSecondary: '#A9B4B0',
-  textTertiary: '#6E7A76',
-  textOnEmphasis: '#101713',
-  primary: palette.emerald[400],
-  primarySoft: 'rgba(53,168,143,0.14)',
+  bg: '#050607',
+  bgElevated: '#111214',
+  bgSunken: '#0A0B0C',
+  card: '#121316',
+  text: '#F3F4F5',
+  textSecondary: '#9AA1A8',
+  textTertiary: '#646B72',
+  textOnEmphasis: '#0B0C0D',
+  primary: '#A9CBB8',
+  primarySoft: 'rgba(169,203,184,0.12)',
   accent: palette.sand[400],
-  accentSoft: 'rgba(217,188,103,0.14)',
-  hairline: 'rgba(232,236,233,0.10)',
-  hairlineStrong: 'rgba(232,236,233,0.24)',
-  placeholder: palette.neutral[600],
+  accentSoft: 'rgba(217,188,103,0.12)',
+  hairline: 'rgba(255,255,255,0.08)',
+  hairlineStrong: 'rgba(255,255,255,0.20)',
+  placeholder: '#4A5057',
   danger: '#D96A5E',
   warning: '#D9B45C',
-  success: palette.emerald[400],
-  overlay: 'rgba(12,18,16,0.92)',
+  success: '#8FC4A8',
+  overlay: 'rgba(5,6,7,0.92)',
+  glass: 'rgba(24,26,29,0.72)',
+  glassBorder: 'rgba(255,255,255,0.09)',
+  activeWash: 'rgba(169,203,184,0.10)',
   quranText: '#F2EBD8',
   tajweed: {
     madd: '#E07B6E',
@@ -150,10 +162,11 @@ const amoled: ThemeColors = {
   ...dark,
   mode: 'amoled',
   bg: '#000000',
-  bgElevated: '#050505',
+  bgElevated: '#0C0C0E',
   bgSunken: '#000000',
-  card: '#050505',
+  card: '#0E0F11',
   overlay: 'rgba(0,0,0,0.94)',
+  glass: 'rgba(18,19,22,0.74)',
 };
 
 export const themes: Record<ThemeMode, ThemeColors> = { light, dark, amoled };
@@ -185,9 +198,11 @@ export const space = {
 /* -------------------------------- radius -------------------------------- */
 
 export const radius = {
-  sm: 6,
-  md: 10,
-  lg: 14,
+  sm: 8,
+  md: 12,
+  lg: 18,
+  xl: 24,
+  sheet: 28,
   pill: 999,
 } as const;
 

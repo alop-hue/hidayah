@@ -1,0 +1,7 @@
+{
+  "name": "athan-alarms",
+  "version": "1.0.0",
+  "description": "Full athan playback through exact alarms and a foreground media service",
+  "main": "index.ts",
+  "private": true
+}

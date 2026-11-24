@@ -19,7 +19,19 @@ import { Button, Segmented, Text, Toggle, LoadingState } from '@/components/ui';
 import { ResizableSheet } from '@/components/ui/Sheet';
 import { MushafReader } from '@/components/quran/MushafReader';
 import { getAyahs, getSurah, getSurahTranslations, getTafsir, type AyahRow, type SurahRow, type TafsirRow, type TranslationRow, TAFSIR_BY_LANG, TAFSIR_SOURCES, TRANSLATION_EDITIONS } from '@/db/queries';
-import { getMemorizedSurah, getNote, isAyahBookmarked, isAyahMemorized, saveNote, toggleAyahBookmark, toggleAyahMemorized } from '@/db/userdb';
+import {
+  getMemorizedSurah,
+  getNote,
+  getSurahHighlights,
+  isAyahBookmarked,
+  isAyahMemorized,
+  saveNote,
+  setAyahHighlight,
+  toggleAyahBookmark,
+  toggleAyahMemorized,
+  type HighlightColor,
+} from '@/db/userdb';
+import { HIGHLIGHT_ORDER, HIGHLIGHT_SWATCH } from '@/features/quran/highlights';
 import { colorizeWords, splitWords } from '@/features/quran/tajweed';
 import { locateAtMs, preloadTiming } from '@/features/quran/timing';
 import { getWbwWord, preloadWbw } from '@/features/quran/wbw';
@@ -62,6 +74,8 @@ export default function ReaderScreen() {
   const [player, setPlayer] = useState<PlayerStatus>({ playing: false, isLoaded: false, currentTime: 0, duration: 0, didJustFinish: false, surah: null, memorize: null, startAyah: null });
   const listRef = useRef<FlatList<LoadedVerse>>(null);
   const [sheetVerse, setSheetVerse] = useState<number | null>(null);
+  const [highlights, setHighlights] = useState<Record<number, HighlightColor>>({});
+  const [highlightColor, setHighlightColor] = useState<HighlightColor | null>(null);
   const [memorizeMode, setMemorizeMode] = useState(params.memorize === '1');
   const isArabic = i18n.language.startsWith('ar');
   const isUrdu = i18n.language.startsWith('ur');
@@ -95,6 +109,7 @@ export default function ReaderScreen() {
         for (const tr of trs) trMap.set(tr.ayah, tr.text);
         setVerses(ayahs.map((a) => ({ ayah: a, translation: trMap.get(a.ayah) ?? '' })));
         setMemorized(new Set(await getMemorizedSurah(surahId)));
+        setHighlights(await getSurahHighlights(surahId));
         if (targetAyah) {
           setTimeout(() => scrollToAyah(targetAyah), 350);
         }
@@ -129,6 +144,7 @@ export default function ReaderScreen() {
   const openSheet = useCallback(async (v: LoadedVerse) => {
     setActive(v);
     setSheetVerse(v.ayah.ayah);
+    setHighlightColor(highlights[v.ayah.ayah] ?? null);
     const [bm, m, n] = await Promise.all([isAyahBookmarked(v.ayah.surah, v.ayah.ayah), isAyahMemorized(v.ayah.surah, v.ayah.ayah), getNote(v.ayah.surah, v.ayah.ayah)]);
     setIsBookmarked(bm);
     setIsMemorized(m);
@@ -139,7 +155,25 @@ export default function ReaderScreen() {
     const map: Record<string, TafsirRow | null> = {};
     for (const s of srcs) map[s] = rows.find((r) => r.source === s) ?? null;
     setTafsir(map);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlights]);
+
+  /** Persist a highlight and keep the reader in sync immediately. */
+  const applyHighlight = useCallback(
+    async (color: HighlightColor | null) => {
+      if (!active) return;
+      await setAyahHighlight(active.ayah.surah, active.ayah.ayah, color);
+      setHighlights((prev) => {
+        const next = { ...prev };
+        if (color) next[active.ayah.ayah] = color;
+        else delete next[active.ayah.ayah];
+        return next;
+      });
+      setHighlightColor(color);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    },
+    [active],
+  );
 
   const copyVerse = async (v: LoadedVerse) => {
     const name = isArabic ? (arabicSurahName(surahId) || (surah?.name ?? '')) : (surah?.english_name ?? '');
@@ -406,6 +440,8 @@ export default function ReaderScreen() {
         verses={verses.map((v) => ({ ayah: v.ayah.ayah, arabic: v.ayah.arabic, page: v.ayah.page, sajda: v.ayah.sajda }))}
         showBismillah={showBismillah}
         activeAyah={activeAyah}
+        highlights={highlights}
+        selectedAyah={sheetVerse}
         focusAyah={memorizeMode ? focusAyah : targetAyah}
         memorizeMode={memorizeMode}
         tajweed={tajweed}
@@ -488,8 +524,11 @@ export default function ReaderScreen() {
         </View>
       )}
 
-      <VerseSheet        visible={sheetVerse !== null}
+      <VerseSheet
+        visible={sheetVerse !== null}
         onClose={() => setSheetVerse(null)}
+        highlightColor={highlightColor}
+        onSetHighlight={(c) => void applyHighlight(c)}
         verse={active}
         surah={surah}
         isHidden={isHidden}
@@ -575,7 +614,7 @@ export default function ReaderScreen() {
 }
 
 function VerseSheet({
-  visible, onClose, verse, surah, tafsir, tafsirTab, setTafsirTab, isBookmarked, onToggleBookmark, isMemorized, onToggleMemorize, note, setNote, onSaveNote, onCopy, onShare, onPlay, defaultTranslation, onChangeTranslation, isArabic, showTafsir, isHidden, onToggleHidden, t, colors,
+  visible, onClose, verse, surah, tafsir, tafsirTab, setTafsirTab, isBookmarked, onToggleBookmark, isMemorized, onToggleMemorize, note, setNote, onSaveNote, onCopy, onShare, onPlay, defaultTranslation, onChangeTranslation, isArabic, showTafsir,  isHidden, onToggleHidden, t, colors, highlightColor, onSetHighlight,
 }: {
   visible: boolean;
   onClose: () => void;
@@ -600,6 +639,8 @@ function VerseSheet({
   showTafsir: boolean;
   isHidden: boolean;
   onToggleHidden: () => void;
+  highlightColor: HighlightColor | null;
+  onSetHighlight: (c: HighlightColor | null) => void;
   t: (k: string, o?: Record<string, unknown>) => string;
   colors: ReturnType<typeof useTheme>['colors'];
 }) {
@@ -669,6 +710,31 @@ function VerseSheet({
             )}
 
               <Text variant="caption" font="uiBold" color="tertiary" style={styles.sheetSection}>
+                {t('quran.highlight')}
+              </Text>
+              <View style={styles.highlightRow}>
+                {HIGHLIGHT_ORDER.map((c) => {
+                  const selected = highlightColor === c;
+                  return (
+                    <Pressable
+                      key={c}
+                      onPress={() => onSetHighlight(selected ? null : c)}
+                      accessibilityRole="button"
+                      accessibilityLabel={t(`quran.highlight${c[0].toUpperCase()}${c.slice(1)}`)}
+                      style={[styles.highlightDotWrap, { borderColor: selected ? colors.primary : colors.hairline }]}
+                    >
+                      <View style={[styles.highlightDot, { backgroundColor: HIGHLIGHT_SWATCH[c] }]} />
+                    </Pressable>
+                  );
+                })}
+                {highlightColor ? (
+                  <Pressable onPress={() => onSetHighlight(null)} hitSlop={8} style={{ marginLeft: 'auto' }}>
+                    <Text variant="micro" font="uiBold" color="tertiary">{t('quran.highlightRemove')}</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+
+              <Text variant="caption" font="uiBold" color="tertiary" style={styles.sheetSection}>
                 {t('quran.notes')}
               </Text>
               <TextInput
@@ -736,6 +802,9 @@ const styles = StyleSheet.create({
   sheetSection: { marginTop: space[5], marginBottom: space[2], textTransform: 'uppercase', letterSpacing: 1 },
   editionChip: { paddingHorizontal: space[3], paddingVertical: space[2], borderWidth: 1, borderRadius: radius.pill },
   noteInput: { minHeight: 80, borderWidth: 1, borderRadius: radius.md, padding: space[3], textAlignVertical: 'top' },
+  highlightRow: { flexDirection: 'row', alignItems: 'center', gap: space[3], marginTop: space[1] },
+  highlightDotWrap: { padding: 3, borderRadius: radius.pill, borderWidth: 2 },
+  highlightDot: { width: 26, height: 26, borderRadius: 13 },
   actionRow: { flexDirection: 'row', justifyContent: 'space-around', marginTop: space[5], paddingTop: space[4], borderTopWidth: StyleSheet.hairlineWidth * 2 },
   actionBtn: { alignItems: 'center', gap: 4 },
   hiddenPlaceholder: { flex: 1, borderWidth: 1, borderStyle: 'dashed', borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', paddingVertical: space[4], marginBottom: space[2] },

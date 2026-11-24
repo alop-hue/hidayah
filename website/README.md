@@ -1,6 +1,6 @@
-# Noor — موقع التطبيق
+# Hidayah — موقع التطبيق
 
-صفحة هبوط عربية (RTL) لتطبيق نور للقرآن. HTML/CSS/JS خام + Vite، بلا إطار عمل.
+صفحة هبوط عربية (RTL) لتطبيق هداية للقرآن. HTML/CSS/JS خام + Vite، بلا إطار عمل.
 
 ## التطوير المحلي
 
@@ -45,7 +45,7 @@ vercel --prod
 
 ## روابط ثابتة
 
-- تحميل APK: `https://github.com/alop-hue/noor/releases/latest/download/Noor-Quran-v1.0.0.apk`
+- تحميل APK: `https://github.com/alop-hue/noor/releases/latest/download/Hidayah-Quran-v1.0.0.apk`
 - المستودع: `https://github.com/alop-hue/noor`
 
 عند إصدار نسخة جديدة بنفس الاسم، يظل رابط التحميل في الموقع صالحًا تلقائيًا (علامة `latest`).

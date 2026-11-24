@@ -4,9 +4,31 @@ const de: Translation = {
   appName: 'Noor',
   appTagline: 'Quran · Gebet · Dhikr',
 
-  tabs: { home: 'Start', quran: 'Quran', hadith: 'Hadith', tools: 'Werkzeuge', more: 'Mehr' },
+  tabs: { home: 'Start', quran: 'Quran', hadith: 'Hadith', tools: 'Werkzeuge', more: 'Mehr', qibla: 'Qibla', dhikr: 'Dhikr', settings: 'Einstellungen' },
+
+  welcome: {
+    tagline: 'Führung, Vers für Vers.',
+    q1: 'Wie möchtest du lesen?',
+    q1a: 'Nur Arabisch',
+    q1b: 'Arabisch mit Übersetzung',
+    q2: 'Tägliches Leseziel',
+    q2a: '1 Seite',
+    q2b: '4 Seiten',
+    q2c: '1 Dschuz',
+    q3: 'Gebetserinnerungen',
+    q3a: 'Benachrichtigungen aktivieren',
+    q3b: 'Jetzt nicht',
+    next: 'Weiter',
+    start: 'Beginnen',
+    skip: 'Überspringen',
+  },
 
   home: {
+    explore: 'Entdecken',
+    prayerAt: '{{prayer}} um {{time}}',
+    hadithHint: '9 Sammlungen',
+    memorizeHint: 'Fortschritt verfolgen',
+    mosqueHint: 'Moscheen in der Nähe',
     greetingMorning: 'Guten Morgen',
     greetingAfternoon: 'Guten Tag',
     greetingEvening: 'Guten Abend',
@@ -29,6 +51,13 @@ const de: Translation = {
   },
 
   quran: {
+    highlight: 'Markieren',
+    highlightSage: 'Salbei',
+    highlightGold: 'Gold',
+    highlightSky: 'Himmel',
+    highlightRose: 'Rose',
+    highlightLilac: 'Flieder',
+    highlightRemove: 'Markierung entfernen',
     title: 'Quran',
     continueReading: 'Weiterlesen',
     search: 'Im Quran suchen',

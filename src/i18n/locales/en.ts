@@ -2,9 +2,31 @@ const en = {
   appName: 'Noor',
   appTagline: 'Quran · Prayer · Dhikr',
 
-  tabs: { home: 'Home', quran: 'Quran', hadith: 'Hadith', tools: 'Tools', more: 'More' },
+  tabs: { home: 'Home', quran: 'Quran', hadith: 'Hadith', tools: 'Tools', more: 'More', qibla: 'Qibla', dhikr: 'Dhikr', settings: 'Settings' },
+
+  welcome: {
+    tagline: 'Guidance, one verse at a time.',
+    q1: 'How would you like to read?',
+    q1a: 'Arabic only',
+    q1b: 'Arabic with translation',
+    q2: 'Set a daily reading goal',
+    q2a: '1 page',
+    q2b: '4 pages',
+    q2c: '1 juz',
+    q3: 'Prayer reminders',
+    q3a: 'Enable notifications',
+    q3b: 'Not now',
+    next: 'Continue',
+    start: 'Begin',
+    skip: 'Skip',
+  },
 
   home: {
+    explore: 'Explore',
+    prayerAt: '{{prayer}} at {{time}}',
+    hadithHint: '9 collections',
+    memorizeHint: 'Track your progress',
+    mosqueHint: 'Nearby mosques',
     greetingMorning: 'Good morning',
     greetingAfternoon: 'Good afternoon',
     greetingEvening: 'Good evening',
@@ -27,6 +49,13 @@ const en = {
   },
 
   quran: {
+    highlight: 'Highlight',
+    highlightSage: 'Sage',
+    highlightGold: 'Gold',
+    highlightSky: 'Sky',
+    highlightRose: 'Rose',
+    highlightLilac: 'Lilac',
+    highlightRemove: 'Remove highlight',
     title: 'Quran',
     continueReading: 'Continue reading',
     search: 'Search the Quran',

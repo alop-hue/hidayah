@@ -1,15 +1,15 @@
 :root {
-  --green-deep: #0b3d35;
-  --green: #0b5e3e;
+  --green-deep: #050607;
+  --green: #22493a;
   --gold: #c9a227;
   --gold-line: rgba(201, 162, 39, 0.45);
   --gold-line-soft: rgba(201, 162, 39, 0.22);
-  --cream: #faf6eb;
-  --cream-dim: #f1e9d7;
-  --paper: #fffdf7;
+  --cream: #f6f5f1;
+  --cream-dim: #ebe9e2;
+  --paper: #ffffff;
   --ink: #241c10;
   --ink-soft: rgba(36, 28, 16, 0.72);
-  --night: #0a1a14;
+  --night: #050607;
   --night-text: rgba(245, 237, 218, 0.78);
   --font-display: 'Amiri', 'Times New Roman', serif;
   --font-body: 'IBM Plex Sans Arabic', system-ui, sans-serif;

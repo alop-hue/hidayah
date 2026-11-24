@@ -1,4 +1,4 @@
-# Noor — Quran & Prayer
+# Hidayah — Quran & Prayer
 
 Offline-first Quran companion built with **Expo SDK 57** (React Native, expo-router, TypeScript). Works fully offline for scripture; audio streams or downloads on demand.
 
@@ -28,6 +28,23 @@ npm install
 npx expo start          # dev server (Expo Go / dev client)
 npx expo run:android    # native build
 ```
+
+## Building the Android APK (CI)
+
+Local native builds are heavy, so the APK is produced by GitHub Actions —
+`.github/workflows/build.yml`:
+
+1. Push the branch (or run the workflow manually from the **Actions** tab).
+2. Open the finished run and download **hidayah-debug-apk** (installable right away)
+   or **hidayah-release-apk**.
+3. Or push a tag to get a public download link:
+   ```bash
+   git tag v1.0.0 && git push origin v1.0.0
+   ```
+   The APKs are attached to the GitHub Release for that tag.
+
+The workflow runs typecheck + tests, regenerates the native project with
+`expo prebuild`, and builds both variants with Java 17 and a Gradle cache.
 
 Data lives in `assets/data/` (bundled gzip SQLite DB, reciter list, adhkar, athan sounds). On first launch the app unpacks `quran.db.gz` into the document directory and gates the UI until ready.
 

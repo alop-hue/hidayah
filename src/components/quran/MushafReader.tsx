@@ -14,6 +14,8 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { Text } from '@/components/ui';
+import type { HighlightColor } from '@/db/userdb';
+import { HIGHLIGHT_WASH } from '@/features/quran/highlights';
 import { colorizeWords, splitWords } from '@/features/quran/tajweed';
 import { toArabicDigits } from '@/lib/digits';
 import { useTheme } from '@/theme/ThemeContext';
@@ -35,6 +37,10 @@ interface Props {
   verses: MushafVerse[];
   showBismillah: boolean;
   activeAyah: number | null;
+  /** Permanently saved highlights for this surah. */
+  highlights?: Record<number, HighlightColor>;
+  /** Verse the user tapped (temporary selection, cleared on sheet close). */
+  selectedAyah?: number | null;
   focusAyah?: number;
   memorizeMode?: boolean;
   tajweed: boolean;
@@ -61,6 +67,9 @@ interface Paper {
   bg: string;
   text: string;
   frame: string;
+  frameInner: string;
+  headerBg: string;
+  headerText: string;
   marker: string;
   markerBg: string;
   tajweed: { madd: string; qalqalah: string; ghunnah: string; ikhfa: string; hamzat: string };
@@ -75,7 +84,10 @@ interface Paper {
 const PAPER_LIGHT: Paper = {
   bg: '#FAF6EB',
   text: '#2B2114',
-  frame: '#C2A56B',
+  frame: '#2F5D49',
+  frameInner: '#C2A56B',
+  headerBg: '#1E5B45',
+  headerText: '#F2E8CF',
   marker: '#9A7B1F',
   markerBg: 'rgba(154,123,31,0.10)',
   tajweed: { madd: '#C0392B', qalqalah: '#1F618D', ghunnah: '#1E8449', ikhfa: '#7D6608', hamzat: '#8E44AD' },
@@ -91,6 +103,9 @@ const PAPER_DARK: Paper = {
   bg: PAGE_BG,
   text: PAGE_TEXT,
   frame: PAGE_FRAME,
+  frameInner: '#3E6B55',
+  headerBg: '#122A1F',
+  headerText: '#E8DCC0',
   marker: MARKER_COLOR,
   markerBg: 'rgba(201,162,39,0.12)',
   tajweed: { madd: '#E07B6E', qalqalah: '#7FB3D5', ghunnah: '#82D4A4', ikhfa: '#D8BE6E', hamzat: '#C39BD3' },
@@ -105,7 +120,9 @@ const PAPER_DARK: Paper = {
 const PAPER_AMOLED: Paper = {
   ...PAPER_DARK,
   bg: '#000000',
-  frame: '#1C1C1C',
+  frame: '#20342A',
+  frameInner: '#2C4A3A',
+  headerBg: '#0B1712',
 };
 
 export function MushafReader({
@@ -114,6 +131,8 @@ export function MushafReader({
   verses,
   showBismillah,
   activeAyah,
+  highlights,
+  selectedAyah,
   focusAyah,
   memorizeMode,
   tajweed,
@@ -203,17 +222,31 @@ export function MushafReader({
 
   const renderVerse = (v: MushafVerse) => {
     const isActive = activeAyah === v.ayah;
+    const isSelected = selectedAyah === v.ayah;
+    const saved = highlights?.[v.ayah];
     const isFocus = memorizeMode && focusAyah === v.ayah;
     const isHidden = hiddenAyahs?.has(v.ayah) ?? false;
     const isWordActive = activeWordAyah === v.ayah && activeWord != null;
     const bg = isActive
       ? 'rgba(201,162,39,0.28)'
-      : isFocus
-        ? 'rgba(201,162,39,0.16)'
-        : 'transparent';
+      : isSelected
+        ? 'rgba(169,203,184,0.22)'
+        : saved
+          ? HIGHLIGHT_WASH[saved]
+          : isFocus
+            ? 'rgba(201,162,39,0.16)'
+            : 'transparent';
     const words = splitWords(v.arabic);
     const spans = tajweed ? colorizeWords(words) : null;
-    const verseMarkerInline = `\u00A0\u06DD${toArabicDigits(v.ayah)}\u00A0`;
+    const verseNumber = toArabicDigits(v.ayah);
+    const marker = (onPress?: () => void) => (
+      <View
+        style={[styles.inlineMarkerCircle, { borderColor: paper.marker, backgroundColor: paper.markerBg }]}
+        onTouchEnd={onPress}
+      >
+        <RNText style={[styles.inlineMarkerText, { color: paper.marker }]}>{verseNumber}</RNText>
+      </View>
+    );
     const base = [
       styles.ayahSpan,
       {
@@ -238,7 +271,7 @@ export function MushafReader({
           ]}
         >
           <Text variant="caption" color="secondary">{t('quran.hiddenAyah')}</Text>
-          <RNText style={[styles.inlineMarker, { color: paper.marker }]}>{verseMarkerInline}</RNText>
+          <RNText style={[styles.inlineMarker, { color: paper.marker }]}>{` ${verseNumber} `}</RNText>
         </Pressable>
       );
     }
@@ -271,9 +304,7 @@ export function MushafReader({
             );
           })}
           {v.sajda === 1 ? <RNText style={{ color: paper.sajda }}> ۩ </RNText> : null}
-          <RNText style={[styles.inlineMarkerCircle, { color: paper.marker }]} onPress={() => onPressAyah(v.ayah)}>
-            {verseMarkerInline}
-          </RNText>
+          {marker(() => onPressAyah(v.ayah))}
         </RNText>
       );
     }
@@ -297,9 +328,7 @@ export function MushafReader({
             ));
           })}
           {v.sajda === 1 ? <RNText style={{ color: paper.sajda }}> ۩ </RNText> : null}
-          <RNText style={[styles.inlineMarkerCircle, { color: paper.marker }]} onPress={() => onPressAyah(v.ayah)}>
-            {verseMarkerInline}
-          </RNText>
+          {marker(() => onPressAyah(v.ayah))}
         </RNText>
       );
     }
@@ -307,9 +336,7 @@ export function MushafReader({
       <RNText key={v.ayah} style={base} {...pressProps}>
         <RNText style={{ color: paper.text }}>{v.arabic}</RNText>
         {v.sajda === 1 ? <RNText style={{ color: paper.sajda }}> ۩ </RNText> : null}
-        <RNText style={[styles.inlineMarkerCircle, { color: paper.marker }]}>
-          {verseMarkerInline}
-        </RNText>
+        {marker()}
       </RNText>
     );
   };
@@ -375,10 +402,14 @@ export function MushafReader({
         viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
         renderItem={({ item }) => (
           <View style={[styles.page, { width: pageW }]}>
+            {/* classic mushaf header band: surah name in a green cartouche */}
+            <View style={[styles.pageHeader, { backgroundColor: paper.headerBg, borderColor: paper.frameInner }]}>
+              <RNText style={[styles.pageHeaderText, { color: paper.headerText }]}>{item.verses[0]?.surahName ?? surahName}</RNText>
+            </View>
             <View style={styles.pageFrame}>
               {/* Ornate double-line frame (classic mushaf page border) */}
               <View style={[styles.frameOuter, { borderColor: paper.frame }]}>
-                <View style={[styles.frameInner, { borderColor: paper.frame }]}>
+                <View style={[styles.frameInner, { borderColor: paper.frameInner }]}>
                   <ScrollView
                     showsVerticalScrollIndicator={false}
                     style={styles.pageBody}
@@ -425,6 +456,24 @@ export function MushafReader({
 
 const styles = StyleSheet.create({
   page: { flex: 1 },
+  pageHeader: {
+    marginHorizontal: 8,
+    marginTop: 6,
+    paddingVertical: 6,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    borderBottomWidth: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pageHeaderText: {
+    fontFamily: 'Amiri_700Bold',
+    fontSize: 17,
+    lineHeight: 26,
+    writingDirection: 'rtl',
+    textAlign: 'center',
+  },
   pageFrame: { flex: 1, padding: 8 },
   // Ornate double-line page frame (classic mushaf border).
   frameOuter: { flex: 1, borderWidth: 3, borderRadius: 3, padding: 3 },
@@ -456,14 +505,20 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   pageMedallion: {
-    minWidth: 44,
-    paddingHorizontal: 12,
-    paddingVertical: 2,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  pageNumber: { fontSize: 15, fontFamily: 'Amiri_400Regular' },
+  pageNumber: {
+    fontSize: 14,
+    lineHeight: 16,
+    textAlign: 'center',
+    includeFontPadding: false,
+    fontFamily: 'Amiri_400Regular',
+  },
   ayahSpan: {
     fontSize: FONT_SIZE,
     lineHeight: LINE_HEIGHT,
@@ -490,10 +545,19 @@ const styles = StyleSheet.create({
   marker: { fontSize: 15, color: MARKER_COLOR, fontFamily: 'Amiri_700Bold', textAlign: 'center' },
   inlineMarker: { fontSize: FONT_SIZE, color: MARKER_COLOR, fontFamily: 'Amiri_700Bold' },
   inlineMarkerCircle: {
-    fontSize: FONT_SIZE - 2,
-    color: MARKER_COLOR,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 3,
+  },
+  inlineMarkerText: {
+    fontSize: 13,
+    lineHeight: 15,
+    includeFontPadding: false,
     fontFamily: 'Amiri_700Bold',
-    marginHorizontal: 1,
   },
   wordTap: { borderBottomWidth: 1, borderBottomColor: 'rgba(242,235,216,0.4)', paddingHorizontal: 1, color: PAGE_TEXT },
   hiddenBox: {

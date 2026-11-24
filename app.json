@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "Noor — Quran & Prayer",
-    "slug": "noor",
+    "name": "Hidayah — Quran & Prayer",
+    "slug": "hidayah",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "noor",
+    "scheme": ["hidayah", "noor"],
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#0B3D35",
+    "backgroundColor": "#050607",
     "ios": {
       "icon": "./assets/images/icon.png",
       "supportsTablet": true,
@@ -21,7 +21,7 @@
     "android": {
       "icon": "./assets/images/icon.png",
       "adaptiveIcon": {
-        "backgroundColor": "#0B3D35",
+        "backgroundColor": "#08090A",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
@@ -45,9 +45,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0B3D35",
+          "backgroundColor": "#050607",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 96
+          "imageWidth": 120
         }
       ],
       "expo-sqlite",
@@ -63,7 +63,7 @@
         "expo-notifications",
         {
           "icon": "./assets/images/notification-icon.png",
-          "color": "#0B3D35",
+          "color": "#A9CBB8",
           "defaultChannel": "prayer"
         }
       ],

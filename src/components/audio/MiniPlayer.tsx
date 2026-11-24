@@ -32,7 +32,7 @@ export function MiniPlayer() {
 
   return (
     <>
-      <Pressable onPress={() => setOpen(true)} style={[styles.bar, { backgroundColor: colors.bgElevated, borderTopColor: colors.hairline }]}>
+      <Pressable onPress={() => setOpen(true)} style={[styles.bar, { backgroundColor: colors.card, borderColor: colors.glassBorder }]}>
         <View style={[styles.progress, { backgroundColor: colors.primary, width: `${progress * 100}%` }]} />
         <View style={styles.row}>
           <Ionicons name="musical-notes" size={18} color={colors.primary} />
@@ -143,8 +143,12 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 }
 
 const styles = StyleSheet.create({
-  bar: { borderTopWidth: StyleSheet.hairlineWidth * 2, overflow: 'hidden' },
-  progress: { position: 'absolute', top: 0, left: 0, height: 2 },
+  bar: {
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+  },
+  progress: { position: 'absolute', bottom: 0, left: 0, height: 2 },
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space[4], paddingVertical: space[3] },
   controls: { flexDirection: 'row', justifyContent: 'center', marginTop: space[5] },
   ctrl: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },

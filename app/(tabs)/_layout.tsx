@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { CustomTabBar } from '@/components/ui/CustomTabBar';
+import { CustomTabBar } from '@/components/ui/FloatingDock';
 import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
 
@@ -21,9 +21,9 @@ export default function TabsLayout() {
       >
         <Tabs.Screen name="index" options={{ title: 'home' }} />
         <Tabs.Screen name="quran" options={{ title: 'quran' }} />
-        <Tabs.Screen name="hadith" options={{ title: 'hadith' }} />
-        <Tabs.Screen name="tools" options={{ title: 'tools' }} />
-        <Tabs.Screen name="more" options={{ title: 'more' }} />
+        <Tabs.Screen name="qibla" options={{ title: 'qibla' }} />
+        <Tabs.Screen name="dhikr" options={{ title: 'dhikr' }} />
+        <Tabs.Screen name="settings" options={{ title: 'settings' }} />
       </Tabs>
     </View>
   );

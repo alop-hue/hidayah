@@ -4,9 +4,31 @@ const fr: Translation = {
   appName: 'Noor',
   appTagline: 'Coran · Prière · Dhikr',
 
-  tabs: { home: 'Accueil', quran: 'Coran', hadith: 'Hadith', tools: 'Outils', more: 'Plus' },
+  tabs: { home: 'Accueil', quran: 'Coran', hadith: 'Hadith', tools: 'Outils', more: 'Plus', qibla: 'Qibla', dhikr: 'Dhikr', settings: 'Réglages' },
+
+  welcome: {
+    tagline: 'La guidance, verset après verset.',
+    q1: 'Comment souhaitez-vous lire ?',
+    q1a: 'Arabe uniquement',
+    q1b: 'Arabe avec traduction',
+    q2: 'Objectif de lecture quotidien',
+    q2a: '1 page',
+    q2b: '4 pages',
+    q2c: '1 juz',
+    q3: 'Rappels de prière',
+    q3a: 'Activer les notifications',
+    q3b: 'Plus tard',
+    next: 'Continuer',
+    start: 'Commencer',
+    skip: 'Passer',
+  },
 
   home: {
+    explore: 'Explorer',
+    prayerAt: '{{prayer}} à {{time}}',
+    hadithHint: '9 recueils',
+    memorizeHint: 'Suivez vos progrès',
+    mosqueHint: 'Mosquées proches',
     greetingMorning: 'Bonjour',
     greetingAfternoon: 'Bon après-midi',
     greetingEvening: 'Bonsoir',
@@ -29,6 +51,13 @@ const fr: Translation = {
   },
 
   quran: {
+    highlight: 'Surligner',
+    highlightSage: 'Sauge',
+    highlightGold: 'Or',
+    highlightSky: 'Ciel',
+    highlightRose: 'Rose',
+    highlightLilac: 'Lilas',
+    highlightRemove: 'Retirer le surlignage',
     title: 'Coran',
     search: 'Rechercher dans le Coran',
     searchHint: 'Sourate, verset, mot…',

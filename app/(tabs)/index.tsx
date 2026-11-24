@@ -1,18 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as Location from 'expo-location';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as Location from 'expo-location';
+import { useTranslation } from 'react-i18next';
 
-import { Surface, Text } from '@/components/ui';
+import { Text } from '@/components/ui';
+import { DOCK_SPACE } from '@/components/ui/FloatingDock';
 import { getSurah } from '@/db/queries';
 import { toArabicDigits } from '@/lib/digits';
-import { formatCountdown, formatTime, getTimesForDate, hijriDate } from '@/services/prayer';
+import { formatTime, getTimesForDate, hijriDate } from '@/services/prayer';
 import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
-import { fontStack, radius, space, type } from '@/theme/tokens';
-import { useTranslation } from 'react-i18next';
+import { radius, space } from '@/theme/tokens';
 
 function useNow(intervalMs = 1000) {
   const [now, setNow] = useState(() => Date.now());
@@ -23,12 +24,23 @@ function useNow(intervalMs = 1000) {
   return now;
 }
 
+const PRAYER_ORDER = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as const;
+
+const PRAYER_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
+  fajr: 'moon-outline',
+  sunrise: 'sunny-outline',
+  dhuhr: 'sunny',
+  asr: 'partly-sunny-outline',
+  maghrib: 'moon',
+  isha: 'moon-outline',
+};
+
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, mode } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { prayer, lastRead, defaultTranslation } = useSettings();
+  const { prayer, lastRead, dailyWird } = useSettings();
   const setPrayer = useSettings((s) => s.setPrayer);
   const [surahName, setSurahName] = useState<string | null>(null);
   const [locating, setLocating] = useState(false);
@@ -44,244 +56,229 @@ export default function HomeScreen() {
           setPrayer({ coords: { lat: loc.coords.latitude, lng: loc.coords.longitude } });
         }
       } catch {
-        // location unavailable — fall back to Makkah times
+        // Fall back to the default city/timezone below.
       }
       setLocating(false);
     })();
   }, [prayer.coords, locating, setPrayer]);
 
+  const rtl = i18n.dir() === 'rtl';
+  const arDigits = (s: string) => (rtl ? toArabicDigits(s) : s);
+
   const coords = prayer.coords ?? { lat: 21.4225, lng: 39.8262 };
   const now = useNow(1000);
-  const result = useMemo(() => getTimesForDate(prayer.method, coords.lat, coords.lng, new Date(now)), [prayer.method, coords.lat, coords.lng, now]);
-  const countdown = result.next ? formatCountdown(result.next.date.getTime() - now) : null;
-  const hijri = useMemo(() => hijriDate(new Date(), i18n.language), [i18n.language]);
-  const timezoneLabel = useMemo(() => {
+  const result = useMemo(
+    () => getTimesForDate(prayer.method, coords.lat, coords.lng, new Date(now)),
+    [prayer.method, coords.lat, coords.lng, now],
+  );
+  const hijri = useMemo(() => hijriDate(new Date(now), i18n.language), [i18n.language, now]);
+
+  const locationLabel = useMemo(() => {
+    if (prayer.city) return prayer.city;
     try {
-      return Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      const city = tz.split('/').pop()?.replace(/_/g, ' ');
+      if (city) return city;
     } catch {
-      return '';
+      /* noop */
     }
-  }, []);
+    return t('home.timezone', { tz: '' }).replace(/:\s*$/, '');
+  }, [prayer.city, t]);
+
+  const gregorian = useMemo(
+    () =>
+      new Date(now).toLocaleDateString(rtl ? 'ar' : i18n.language, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+      }),
+    [now, rtl, i18n.language],
+  );
 
   useEffect(() => {
     if (!lastRead) return;
-    const isAr = i18n.dir() === 'rtl' || i18n.language.startsWith('ar');
     getSurah(lastRead.surah).then((s) =>
-      setSurahName(s ? (isAr ? s.name.replace(/^سُ?ورَ?ةُ?\s+/u, '') : s.english_name) : null),
+      setSurahName(s ? (rtl ? s.name.replace(/^سُ?ورَ?ةُ?\s+/u, '') : s.english_name) : null),
     );
-  }, [lastRead, i18n.language, i18n.dir]);
+  }, [lastRead, rtl]);
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? t('home.greetingMorning') : hour < 18 ? t('home.greetingAfternoon') : t('home.greetingEvening');
-  void defaultTranslation;
+  const nextName = result.next ? t(`prayer.${result.next.name}`) : '';
+  const nextTime = result.next ? formatTime(result.next.date) : '';
 
-  const quickTools = [
-    { icon: 'compass-outline', label: t('tools.qibla'), route: '/tools/qibla' },
-    { icon: 'repeat-outline', label: t('tools.tasbih'), route: '/tools/tasbih' },
-    { icon: 'sparkles-outline', label: t('tools.dhikr'), route: '/tools/dhikr' },
-    { icon: 'calendar-outline', label: t('tools.calendar'), route: '/tools/calendar' },
+  const explore = [
+    { icon: 'sparkles', title: t('tools.names99'), hint: t('tools.names99Hint'), route: '/tools/names99' },
+    { icon: 'chatbubbles', title: t('hadith.title'), hint: t('home.hadithHint'), route: '/hadith' },
+    { icon: 'business', title: t('tools.mosque'), hint: t('home.mosqueHint'), route: '/tools/mosque' },
+    { icon: 'flower', title: t('tools.dhikr'), hint: t('tools.dhikrHint'), route: '/tools/dhikr' },
+    { icon: 'school-outline', title: t('memorize.title'), hint: t('home.memorizeHint'), route: '/more/memorize' },
+    { icon: 'repeat', title: t('tools.tasbih'), hint: t('tools.tasbihHint'), route: '/tools/tasbih' },
+    { icon: 'calendar-outline', title: t('tools.calendar'), hint: t('tools.calendarHint'), route: '/tools/calendar' },
+    {
+      icon: 'bookmark',
+      title: t('home.continueReading'),
+      hint: lastRead && surahName ? `${t('home.surah', { surah: surahName })} · ${arDigits(String(dailyWird.completed))}/${arDigits(String(dailyWird.target))}` : t('home.noProgress'),
+      route: '/tools/wird',
+    },
   ] as const;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline, borderBottomWidth: StyleSheet.hairlineWidth * 2, paddingTop: space[3] }]}>
-        <View>
-          <Text variant="caption" color="secondary" font="uiBold" style={{ letterSpacing: 1, textTransform: 'uppercase' }}>
-            {greeting}
-          </Text>
-          <Text variant="display" font="uiBold">
-            Noor
-          </Text>
-        </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text variant="body" font="arabic">
-            {hijri.full || ''}
-          </Text>
-        </View>
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + space[8] }}>
-
-      {coords && result.next && (
-        <Surface style={styles.nextPrayer}>
-          <View style={styles.nextRow}>
-            <View>
-              <Text variant="caption" color="secondary" style={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                {t('home.nextPrayer')}
-              </Text>
-              <Text variant="title" font="uiBold" style={{ marginTop: 2 }}>
-                {t(`prayer.${result.next.name}`)}
-              </Text>
-              <Text variant="heading" font="uiBold" color="primary" style={{ marginTop: 4, fontVariant: ['tabular-nums'] }}>
-                {formatTime(result.next.date, true)}
-              </Text>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text variant="body" color="secondary">
-                {t('home.countdown')}
-              </Text>
-              <Text variant="display" font="uiBold" color="accent" style={{ fontVariant: ['tabular-nums'] }}>
-                {countdown}
-              </Text>
-            </View>
-          </View>
-          <View style={[styles.dayTimes, { borderTopColor: colors.hairline }]}>
-            {Object.entries(result.times).map(([name, date]) => (
-              <View key={name} style={styles.dayTimeItem}>
-                <Text variant="caption" color="secondary">
-                  {t(`prayer.${name}`)}
-                </Text>
-                <Text variant="bodySmall" font="uiBold">
-                  {formatTime(date)}
-                </Text>
-              </View>
-            ))}
-          </View>
-          {timezoneLabel ? (
-            <Text variant="micro" color="tertiary" style={{ textAlign: 'center', marginTop: space[3] }}>
-              {t('home.timezone', { tz: timezoneLabel })}
-            </Text>
-          ) : null}
-          {!prayer.coords ? (
-            <Text variant="micro" color="tertiary" style={{ textAlign: 'center', marginTop: 2 }}>
-              {t('home.meccaFallback')}
-            </Text>
-          ) : null}
-        </Surface>
-      )}
-
-      {lastRead && surahName && (
-        <Pressable
-          onPress={() => router.push(`/quran/${lastRead.surah}?ayah=${lastRead.ayah}`)}
-          style={({ pressed }) => [styles.lastRead, { backgroundColor: colors.primarySoft, borderColor: colors.hairline }, pressed && { opacity: 0.8 }]}
-        >
-          <Ionicons name="bookmark" size={20} color={colors.primary} />
-          <View style={{ flex: 1 }}>
-            <Text variant="bodySmall" font="uiBold" color="primary">
-              {t('home.continueReading')}
-            </Text>
-            <Text variant="body" font={i18n.dir() === 'rtl' ? 'arabicBold' : 'uiBold'}>
-              {t('home.surah', { surah: surahName })} · {t('quran.verseNumber')}{' '}
-              {i18n.dir() === 'rtl' ? toArabicDigits(lastRead.ayah) : lastRead.ayah}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
-        </Pressable>
-      )}
-
-      <Text variant="caption" font="uiBold" color="tertiary" style={styles.section}>
-        {t('home.quickTools')}
-      </Text>
-      <View style={styles.toolsGrid}>
-        {quickTools.map((tool) => (
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingTop: insets.top + space[3],
+          paddingBottom: insets.bottom + DOCK_SPACE,
+          paddingHorizontal: space[5],
+        }}
+      >
+        {/* header: mark + location */}
+        <View style={styles.topRow}>
+          <Ionicons name="moon" size={15} color={colors.textSecondary} />
           <Pressable
-            key={tool.route}
-            onPress={() => router.push(tool.route)}
-            style={({ pressed }) => [
-              styles.toolCard,
-              { backgroundColor: colors.card, borderColor: colors.hairline },
-              pressed && { opacity: 0.7 },
-            ]}
+            onPress={() => router.push('/more/settings')}
+            style={({ pressed }) => [styles.locationLink, pressed && { opacity: 0.7 }]}
+            accessibilityRole="button"
+            accessibilityLabel={locationLabel}
           >
-            <Ionicons name={tool.icon} size={24} color={colors.primary} />
-            <Text variant="bodySmall" font="uiBold" style={{ marginTop: space[2] }}>
-              {tool.label}
+            <Ionicons name="navigate" size={12} color={colors.textSecondary} />
+            <Text variant="caption" font="uiBold" numberOfLines={1} style={{ color: colors.textSecondary }}>
+              {locationLabel}
             </Text>
           </Pressable>
-        ))}
-        <Pressable
-          onPress={() => router.push('/tools/wird')}
-          style={({ pressed }) => [
-            styles.toolCard,
-            { backgroundColor: colors.card, borderColor: colors.hairline },
-            pressed && { opacity: 0.7 },
-          ]}
-        >
-          <Ionicons name="today-outline" size={24} color={colors.primary} />
-          <Text variant="bodySmall" font="uiBold" style={{ marginTop: space[2] }}>
-            {t('wird.title')}
-          </Text>
-        </Pressable>
-      </View>
-
-      <Text variant="caption" font="uiBold" color="tertiary" style={styles.section}>
-        {t('home.today')}
-      </Text>
-      <Surface hairline={false} style={{ marginHorizontal: space[4], marginTop: space[2] }}>
-        <View style={styles.todayRow}>
-          <Ionicons name="moon" size={18} color={colors.accent} />
-          <Text variant="body" font="arabic" style={{ flex: 1, textAlign: 'right' }}>
-            {new Date().toLocaleDateString(i18n.language === 'ar' || i18n.language === 'ur' ? 'ar' : i18n.language, {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })}
-          </Text>
         </View>
-      </Surface>
 
-      <View style={{ height: space[2] }} />
+        {/* next prayer hero */}
+        <Text variant="display" font="uiBold" style={styles.hero} numberOfLines={2}>
+          {result.next ? t('home.prayerAt', { prayer: nextName, time: arDigits(nextTime) }) : t('home.nextPrayer')}
+        </Text>
+        <Text variant="body" color="secondary" style={{ marginTop: 2 }}>
+          {hijri.full}
+        </Text>
+
+        {/* date + location selector */}
+        <View style={styles.selector}>
+          <Pressable
+            onPress={() => router.push('/tools/calendar')}
+            style={({ pressed }) => [styles.selectorItem, styles.dateItem, { backgroundColor: colors.bgElevated }, pressed && { opacity: 0.7 }]}
+          >
+            <Text variant="bodySmall" font="uiBold" numberOfLines={1} style={{ color: colors.text }}>
+              {gregorian}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/more/settings')}
+            style={({ pressed }) => [styles.selectorItem, styles.locationItem, { backgroundColor: colors.card }, pressed && { opacity: 0.7 }]}
+          >
+            <Ionicons name="navigate" size={11} color={colors.textSecondary} />
+            <Text variant="bodySmall" font="uiBold" numberOfLines={1} style={{ color: colors.text }}>
+              {locationLabel}
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* prayer times card */}
+        <View style={styles.prayerCard}>
+          {PRAYER_ORDER.map((name, idx) => {
+            const active = result.next?.name === name;
+            return (
+              <View
+                key={name}
+                style={[
+                  styles.prayerRow,
+                  idx > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.hairline },
+                  active && { backgroundColor: mode === 'light' ? colors.bgSunken : '#1A1C1F' },
+                ]}
+              >
+                <View style={[styles.prayerIcon, { backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.05)' : 'rgba(255,255,255,0.05)' }]}>
+                  <Ionicons name={PRAYER_ICON[name]} size={15} color={active ? colors.text : colors.textSecondary} />
+                </View>
+                <Text variant="body" font={active ? 'uiBold' : 'ui'} style={{ flex: 1, color: active ? colors.text : colors.text }}>
+                  {t(`prayer.${name}`)}
+                </Text>
+                <Text variant="body" font={active ? 'uiBold' : 'ui'} style={{ color: active ? colors.text : colors.textSecondary, fontVariant: ['tabular-nums'] }}>
+                  {arDigits(formatTime(result.times[name]))}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+
+        {/* explore */}
+        <Text variant="subheading" font="uiBold" style={{ marginTop: space[7], marginBottom: space[3] }}>
+          {t('home.explore')}
+        </Text>
+        <View style={styles.grid}>
+          {explore.map((item) => (
+            <Pressable
+              key={item.route}
+              onPress={() => router.push(item.route as never)}
+              style={({ pressed }) => [styles.tile, { backgroundColor: colors.card }, pressed && { opacity: 0.75 }]}
+            >
+              <View style={[styles.tileIcon, { backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.05)' : 'rgba(255,255,255,0.06)' }]}>
+                <Ionicons name={item.icon} size={18} color={colors.text} />
+              </View>
+              <Text variant="bodySmall" font="uiBold" style={{ marginTop: space[4] }} numberOfLines={1}>
+                {item.title}
+              </Text>
+              <Text variant="caption" color="tertiary" numberOfLines={1} style={{ marginTop: 1 }}>
+                {item.hint}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: space[5],
-    paddingBottom: space[5],
-  },
-  nextPrayer: { marginHorizontal: space[4] },
-  nextRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dayTimes: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: space[5],
-    paddingTop: space[4],
-    borderTopWidth: StyleSheet.hairlineWidth * 2,
-  },
-  dayTimeItem: { alignItems: 'center', gap: 2 },
-  lastRead: {
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: space[4] },
+  locationLink: { flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: '70%' },
+  hero: { fontSize: 33, lineHeight: 39, letterSpacing: -0.8 },
+  selector: { flexDirection: 'row', gap: space[3], marginTop: space[4] },
+  selectorItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space[3],
-    marginHorizontal: space[4],
-    marginTop: space[4],
-    padding: space[4],
-    borderWidth: StyleSheet.hairlineWidth * 2,
+    gap: 5,
+    paddingHorizontal: space[4],
+    paddingVertical: 13,
     borderRadius: radius.md,
   },
-  section: {
-    marginTop: space[6],
-    marginBottom: space[2],
-    marginHorizontal: space[4],
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+  prayerCardBg: { backgroundColor: 'transparent' },
+  dateItem: { flex: 1 },
+  locationItem: { flex: 1.18 },
+  prayerCard: {
+    marginTop: space[4],
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    backgroundColor: '#121316',
   },
-  toolsGrid: {
+  prayerRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: space[3],
     paddingHorizontal: space[4],
+    paddingVertical: space[3],
   },
-  toolCard: {
-    width: '47%',
-    flexGrow: 1,
-    padding: space[4],
-    borderWidth: StyleSheet.hairlineWidth * 2,
-    borderRadius: radius.md,
-  },
-  todayRow: {
+  prayerIcon: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  continueCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space[3],
+    marginTop: space[3],
+    paddingHorizontal: space[4],
+    paddingVertical: space[3],
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth * 2,
   },
+  continueIcon: { width: 34, height: 34, borderRadius: radius.sm + 2, alignItems: 'center', justifyContent: 'center' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space[3] },
+  tile: {
+    width: '48.3%',
+    flexGrow: 1,
+    padding: space[4],
+    borderRadius: radius.lg,
+    minHeight: 118,
+  },
+  tileIcon: { width: 34, height: 34, borderRadius: radius.sm + 2, alignItems: 'center', justifyContent: 'center' },
 });

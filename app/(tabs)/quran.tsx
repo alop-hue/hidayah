@@ -93,7 +93,7 @@ export default function QuranTab() {
             <FlatList showsVerticalScrollIndicator={false}
               data={surahs}
               keyExtractor={(s) => String(s.id)}
-              contentContainerStyle={{ paddingBottom: insets.bottom + space[8] }}
+              contentContainerStyle={{ paddingBottom: insets.bottom + 132 }}
               renderItem={({ item }) => {
                 const isLast = lastRead?.surah === item.id;
                 return (
@@ -170,7 +170,7 @@ function IndexList({
       data={items}
       keyExtractor={(n) => String(n)}
       numColumns={5}
-      contentContainerStyle={{ padding: space[3] }}
+      contentContainerStyle={{ padding: space[3], paddingBottom: 132 }}
       renderItem={({ item }) => (
         <Pressable
           onPress={() => {
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   },
   segRow: { paddingHorizontal: space[4], paddingBottom: space[3] },
   rtlRow: { direction: 'rtl' },
-  rtlText: { textAlign: 'right' },
+  rtlText: { textAlign: 'right', writingDirection: 'rtl' },
   continueChip: {
     flexDirection: 'row',
     alignItems: 'center',

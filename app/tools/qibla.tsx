@@ -13,7 +13,7 @@ import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
 import { radius, space } from '@/theme/tokens';
 
-export default function QiblaScreen() {
+export default function QiblaScreen({ inTab = false }: { inTab?: boolean } = {}) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -76,9 +76,13 @@ export default function QiblaScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
       <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
+        {inTab ? (
+          <View style={{ width: 24 }} />
+        ) : (
+          <Pressable onPress={() => router.back()} hitSlop={8}>
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
+          </Pressable>
+        )}
         <Text variant="subheading" font="uiBold">{t('tools.qibla')}</Text>
         <View style={{ width: 24 }} />
       </View>
@@ -91,7 +95,7 @@ export default function QiblaScreen() {
           <Text variant="bodySmall" color="secondary">{t('qibla.locationNeededHint')}</Text>
         </Surface>
       ) : (
-        <View style={{ alignItems: 'center', paddingTop: space[8] }}>
+        <View style={{ alignItems: 'center', paddingTop: space[8], paddingBottom: inTab ? 120 : 0 }}>
           <View style={[styles.compass, { borderColor: colors.hairline, backgroundColor: colors.card }]}>
             <View
               style={{
