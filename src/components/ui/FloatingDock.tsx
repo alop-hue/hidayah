@@ -53,21 +53,23 @@ export function CustomTabBar({ state, navigation }: any) {
   const rowX = useRef(0);
   const rowW = useRef(0);
   const lastIndex = useRef(state.index);
-  const [measured, setMeasured] = useState(0);
+  // Real measured x of every tab, so the selection capsule lands exactly under
+  // the active item regardless of RTL/LTR ordering.
+  const [tabXs, setTabXs] = useState<number[]>([]);
+  const [tabW, setTabW] = useState(0);
 
   const pillX = useSharedValue(0);
   const pillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: pillX.value }] }));
-
-  const tabWidth = TABS.length ? measured / TABS.length : 0;
-  const tabWidthRef = useRef(tabWidth);
-  tabWidthRef.current = tabWidth;
-  const rtlRef = useRef(rtl);
-  rtlRef.current = rtl;
+  const tabXsRef = useRef<number[]>([]);
+  tabXsRef.current = tabXs;
+  const tabWRef = useRef(0);
+  tabWRef.current = tabW;
 
   useEffect(() => {
-    const visualIndex = rtl ? TABS.length - 1 - state.index : state.index;
-    pillX.value = withSpring(visualIndex * tabWidth, { damping: 18, stiffness: 220, mass: 0.7 });
-  }, [state.index, tabWidth, rtl, pillX]);
+    const x = tabXs[state.index];
+    if (typeof x !== 'number') return;
+    pillX.value = withSpring(x + 2, { damping: 18, stiffness: 220, mass: 0.7 });
+  }, [state.index, tabXs, pillX]);
 
   const goTo = (index: number) => {
     const clamped = Math.max(0, Math.min(TABS.length - 1, index));
@@ -88,11 +90,19 @@ export function CustomTabBar({ state, navigation }: any) {
         });
       },
       onPanResponderMove: (_, g) => {
-        const w = tabWidthRef.current;
-        if (!w) return;
-        const local = g.moveX - rowX.current - space[2];
-        const raw = Math.floor(local / w);
-        goTo(rtlRef.current ? TABS.length - 1 - raw : raw);
+        const xs = tabXsRef.current;
+        if (!xs.length) return;
+        const local = g.moveX - rowX.current;
+        let best = 0;
+        let bestDist = Infinity;
+        xs.forEach((x, i) => {
+          const dist = Math.abs(local - (x + tabWRef.current / 2));
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = i;
+          }
+        });
+        goTo(best);
       },
     }),
   ).current;
@@ -110,6 +120,16 @@ export function CustomTabBar({ state, navigation }: any) {
         accessibilityRole="button"
         accessibilityState={{ selected: focused }}
         accessibilityLabel={t(tab.labelKey)}
+        onLayout={(e) => {
+          const { x, width } = e.nativeEvent.layout;
+          setTabW(width);
+          setTabXs((prev) => {
+            if (prev[index] === x) return prev;
+            const next = [...prev];
+            next[index] = x;
+            return next;
+          });
+        }}
         style={({ pressed }) => [styles.tab, pressed && { opacity: 0.7 }]}
       >
         <View style={styles.iconCapsule}>
@@ -158,23 +178,22 @@ export function CustomTabBar({ state, navigation }: any) {
         <View style={[styles.specular, { backgroundColor: mode === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.16)' }]} />
         <View
           ref={rowRef}
-          onLayout={(e) => {
-            setMeasured(e.nativeEvent.layout.width - space[2] * 2);
+          onLayout={() => {
             rowRef.current?.measureInWindow((x) => {
               rowX.current = x;
             });
           }}
-          style={[styles.row, { flexDirection: 'row', direction: rtl ? 'rtl' : 'ltr' }]}
+          style={[styles.row, rtl && { flexDirection: 'row-reverse' }]}
           {...pan.panHandlers}
         >
-          {tabWidth > 0 ? (
+          {tabW > 0 ? (
             <Animated.View
               pointerEvents="none"
               style={[
                 styles.pill,
                 pillStyle,
                 {
-                  width: tabWidth - 4,
+                  width: tabW - 4,
                   backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.06)' : 'rgba(255,255,255,0.16)',
                   borderColor: mode === 'light' ? 'rgba(14,15,17,0.04)' : 'rgba(255,255,255,0.06)',
                 },
@@ -219,13 +238,14 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   row: {
+    flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: space[2],
     paddingVertical: 6,
   },
   pill: {
     position: 'absolute',
-    left: space[2] + 2,
+    left: 0,
     top: 6,
     bottom: 6,
     borderRadius: 26,
