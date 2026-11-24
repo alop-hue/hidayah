@@ -119,7 +119,7 @@ export const useSettings = create<SettingsState>()(
       theme: 'system',
       language: null,
       defaultTranslation: 'eng-muhammadtaqiudd',
-      tajweed: true,
+      tajweed: false,
       wordByWord: false,
       showTranslation: true,
       prayer: {

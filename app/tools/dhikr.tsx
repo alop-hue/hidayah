@@ -93,7 +93,7 @@ export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {})
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, ]}>
+      <View style={[styles.header, { flexDirection: 'row' }]}>
         {inTab ? (
           <View style={{ width: 38 }} />
         ) : (
@@ -147,7 +147,7 @@ export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {})
                 variant="caption"
                 font="uiBold"
                 numberOfLines={1}
-                style={{ color: selected ? colors.bg : colors.textSecondary, fontSize: 12, lineHeight: 18 }}
+                style={{ color: selected ? colors.bg : colors.textSecondary, fontSize: 12, lineHeight: 18, flexShrink: 0 }}
               >
                 {t(`dhikr.categories.${c}`)}
               </Text>
@@ -244,6 +244,7 @@ const styles = StyleSheet.create({
   },
   iconBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   chip: {
+    flexShrink: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,

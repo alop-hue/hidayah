@@ -293,7 +293,7 @@ export default function FatawaScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
+      <View style={[styles.header, { flexDirection: 'row', backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <Ionicons name={rtl ? 'chevron-forward' : 'chevron-back'} size={24} color={colors.text} />
         </Pressable>

@@ -1,3 +1,4 @@
+import { i18n } from '@/i18n';
 import { CalculationMethod, Coordinates, HighLatitudeRule, PrayerTimes, Qibla } from 'adhan';
 
 import type { PrayerName } from '../store/settings';
@@ -99,8 +100,18 @@ export function formatCountdown(ms: number): string {
   return `${m}:${pad(s)}`;
 }
 
+const TIME_LOCALES: Record<string, string> = {
+  en: 'en-US',
+  ar: 'ar-EG',
+  tr: 'tr-TR',
+  id: 'id-ID',
+  ur: 'ur-PK',
+  fr: 'fr-FR',
+  de: 'de-DE',
+};
+
 export function formatTime(d: Date, withSeconds = false): string {
-  return d.toLocaleTimeString([], {
+  return d.toLocaleTimeString(TIME_LOCALES[i18n.language] ?? 'en-US', {
     hour: 'numeric',
     minute: '2-digit',
     ...(withSeconds ? { second: '2-digit' } : {}),

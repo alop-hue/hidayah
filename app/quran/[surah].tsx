@@ -336,7 +336,7 @@ export default function ReaderScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline, paddingTop: insets.top }]}>
+      <View style={[styles.header, { flexDirection: 'row', backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline, paddingTop: insets.top }]}>
         <View style={styles.headerRow}>
           <Pressable onPress={() => router.back()} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.back')}>
             <Ionicons name="chevron-back" size={24} color={colors.text} />

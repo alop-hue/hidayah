@@ -33,7 +33,7 @@ const TABS = [
 
 // Fade ramp painted above the dock (top → bottom), so the scrolling content
 // melts into the glass instead of being cut off by a hard edge.
-const FADE = Array.from({ length: 30 }, (_, i) => Math.pow((i + 1) / 30, 1.9));
+const FADE = Array.from({ length: 30 }, (_, i) => Math.pow((i + 1) / 30, 1.9) * 0.94);
 
 /**
  * Floating liquid-glass navigation, matched to the Hidayah reference.
@@ -47,7 +47,7 @@ export function CustomTabBar({ state, navigation }: any) {
   const { colors, mode } = useTheme();
   const insets = useSafeAreaInsets();
   const rtl = i18n.dir() === 'rtl';
-  const bottom = Math.max(insets.bottom, 10);
+  const bottom = Math.max(insets.bottom - 4, 6);
 
   const rowRef = useRef<View>(null);
   const rowX = useRef(0);
@@ -144,15 +144,17 @@ export function CustomTabBar({ state, navigation }: any) {
 
   return (
     <View pointerEvents="box-none" style={[styles.wrap, { paddingBottom: bottom }]}>
-      {/* soft fade so content dissolves into the dock, as in the reference */}
-      <View pointerEvents="none" style={styles.fadeZone}>
-        {FADE.map((opacity, i) => (
-          <View key={i} style={{ flex: 1, backgroundColor: colors.bg, opacity }} />
-        ))}
-      </View>
       <View style={styles.playerSlot}>
         <MiniPlayer />
       </View>
+      <View style={styles.dockWrap}>
+        {/* bottom scrim, sitting *under* the glass so the dock melts into the
+            edge of the screen instead of floating over a hard cut */}
+        <View pointerEvents="none" style={[styles.fadeZone, { bottom: -(bottom + 10) }]}>
+          {FADE.map((opacity, i) => (
+            <View key={i} style={{ flex: 1, backgroundColor: colors.bg, opacity }} />
+          ))}
+        </View>
       <View
         style={[
           styles.dock,
@@ -186,7 +188,7 @@ export function CustomTabBar({ state, navigation }: any) {
           style={[styles.row, rtl && { flexDirection: 'row-reverse' }]}
           {...pan.panHandlers}
         >
-          {tabW > 0 ? (
+          {tabW > 0 && typeof tabXs[state.index] === 'number' ? (
             <Animated.View
               pointerEvents="none"
               style={[
@@ -203,6 +205,7 @@ export function CustomTabBar({ state, navigation }: any) {
           {items}
         </View>
       </View>
+      </View>
     </View>
   );
 }
@@ -218,8 +221,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: space[4],
   },
-  fadeZone: { height: 112, marginHorizontal: -space[4], flexDirection: 'column' },
-  playerSlot: { marginBottom: 0 },
+  fadeZone: {
+    position: 'absolute',
+    left: -space[4],
+    right: -space[4],
+    top: -44,
+    flexDirection: 'column',
+  },
+  playerSlot: { marginBottom: 0, zIndex: 2 },
+  dockWrap: { zIndex: 2 },
   dock: {
     borderRadius: 34,
     borderWidth: StyleSheet.hairlineWidth * 2,

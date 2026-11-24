@@ -149,8 +149,29 @@ export function MushafReader({
   activeWord,
   activeWordAyah,
 }: Props) {
-  const { mode } = useTheme();
-  const paper = mode === 'light' ? PAPER_LIGHT : mode === 'amoled' ? PAPER_AMOLED : PAPER_DARK;
+  const { colors } = useTheme();
+  // The page now uses the same palette as the rest of the app: neutral sheet,
+  // ink text, sage/gold accents. No separate green parchment theme.
+  const paper = useMemo<Paper>(
+    () => ({
+      bg: colors.card,
+      text: colors.text,
+      frame: colors.hairline,
+      frameInner: colors.hairlineStrong,
+      headerBg: colors.bgSunken,
+      headerText: colors.accent,
+      marker: colors.accent,
+      markerBg: 'transparent',
+      tajweed: colors.tajweed,
+      sajda: colors.accent,
+      muted: colors.textSecondary,
+      hairline: colors.hairline,
+      underline: colors.hairline,
+      chipBorder: colors.hairline,
+      chipBg: colors.bgSunken,
+    }),
+    [colors],
+  );
   const { t, i18n } = useTranslation();
   const listRef = useRef<FlatList>(null);
   const [pageW, setPageW] = useState(0);
@@ -241,13 +262,11 @@ export function MushafReader({
     const words = splitWords(v.arabic);
     const spans = tajweed ? colorizeWords(words) : null;
     const verseNumber = toArabicDigits(v.ayah);
+    // Inline, text-flow marker (ornate parentheses) so verses wrap mid-verse.
     const marker = (onPress?: () => void) => (
-      <View
-        style={[styles.inlineMarkerCircle, { borderColor: paper.marker, backgroundColor: paper.markerBg }]}
-        onTouchEnd={onPress}
-      >
-        <RNText style={[styles.inlineMarkerText, { color: paper.marker }]}>{verseNumber}</RNText>
-      </View>
+      <RNText onPress={onPress} style={[styles.inlineMarker, { color: paper.marker }]}>
+        {` \uFD3F${verseNumber}\uFD3E `}
+      </RNText>
     );
     const base = [
       styles.ayahSpan,
@@ -263,18 +282,13 @@ export function MushafReader({
     };
     if (isHidden && onToggleHidden) {
       return (
-        <Pressable
+        <RNText
           key={`h${v.ayah}`}
           onPress={() => onToggleHidden(v.ayah)}
-          style={({ pressed }) => [
-            styles.hiddenBox,
-            { borderColor: paper.hairline },
-            pressed && { opacity: 0.7 },
-          ]}
+          style={[styles.inlineMarker, { color: paper.muted }]}
         >
-          <Text variant="caption" color="secondary">{t('quran.hiddenAyah')}</Text>
-          <RNText style={[styles.inlineMarker, { color: paper.marker }]}>{` ${verseNumber} `}</RNText>
-        </Pressable>
+          {` ${t('quran.hiddenAyah')} ﴿${verseNumber}﴾ `}
+        </RNText>
       );
     }
     if (wordByWord && onPressWord) {
@@ -355,15 +369,34 @@ export function MushafReader({
   // real page that may contain one or more surah openings).
   const renderPageContent = (pageVerses: MushafVerse[]): ReactNode[] => {
     const out: ReactNode[] = [];
+    let paragraph: ReactNode[] = [];
+    let pIndex = 0;
+
+    const flush = () => {
+      if (!paragraph.length) return;
+      out.push(
+        <RNText
+          key={`para${pIndex++}`}
+          style={[styles.paragraph, { color: paper.text, fontFamily: 'Amiri_400Regular' }]}
+        >
+          {paragraph}
+        </RNText>,
+      );
+      paragraph = [];
+    };
+
     pageVerses.forEach((v, idx) => {
       if (v.ayah === 1) {
+        flush();
         const s = v.surah ?? surahId;
         if (showBismillah && s !== 1 && s !== 9) {
           out.push(renderBismillah(`bi${s}_${idx}`));
         }
       }
-      out.push(renderVerse(v));
+      paragraph.push(renderVerse(v));
+      paragraph.push(' ');
     });
+    flush();
     return out;
   };
 
@@ -537,7 +570,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(201,162,39,0.08)',
   },
   marker: { fontSize: 15, color: MARKER_COLOR, fontFamily: 'Amiri_700Bold', textAlign: 'center' },
-  inlineMarker: { fontSize: FONT_SIZE, color: MARKER_COLOR, fontFamily: 'Amiri_700Bold' },
+  paragraph: {
+    fontSize: FONT_SIZE,
+    lineHeight: LINE_HEIGHT,
+    textAlign: 'justify',
+    writingDirection: 'rtl',
+  },
+  inlineMarker: { fontSize: FONT_SIZE - 2, lineHeight: LINE_HEIGHT, fontFamily: 'Amiri_700Bold' },
   inlineMarkerCircle: {
     width: 24,
     height: 24,
