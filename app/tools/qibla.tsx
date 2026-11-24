@@ -1,27 +1,34 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import * as Location from 'expo-location';
 import { Magnetometer } from 'expo-sensors';
 
-import { Surface, Text, LoadingState } from '@/components/ui';
+import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
+import { ResizableSheet } from '@/components/ui/Sheet';
+import { Text, LoadingState } from '@/components/ui';
 import { qiblaDirection } from '@/services/prayer';
 import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
-import { radius, space } from '@/theme/tokens';
+import { space } from '@/theme/tokens';
+
+const DIAL = 236;
+const TICKS = Array.from({ length: 60 }, (_, i) => i);
 
 export default function QiblaScreen({ inTab = false }: { inTab?: boolean } = {}) {
   const { t } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, mode } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { prayer, setPrayer } = useSettings();
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(prayer.coords);
   const [loading, setLoading] = useState(false);
   const [heading, setHeading] = useState<number | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
   const subscribed = useRef(false);
 
   useEffect(() => {
@@ -72,66 +79,156 @@ export default function QiblaScreen({ inTab = false }: { inTab?: boolean } = {})
 
   const direction = coords ? qiblaDirection(coords.lat, coords.lng) : null;
   const rotation = direction !== null && heading !== null ? direction - heading : direction ?? 0;
+  const distance = coords ? haversine(coords.lat, coords.lng, 21.4225, 39.8262) : null;
+  const dialTickColor = mode === 'light' ? 'rgba(14,15,17,0.28)' : 'rgba(255,255,255,0.28)';
+  const dialMajorColor = mode === 'light' ? 'rgba(14,15,17,0.7)' : 'rgba(255,255,255,0.75)';
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
-        {inTab ? (
-          <View style={{ width: 24 }} />
-        ) : (
-          <Pressable onPress={() => router.back()} hitSlop={8}>
-            <Ionicons name="chevron-back" size={24} color={colors.text} />
-          </Pressable>
-        )}
-        <Text variant="subheading" font="uiBold">{t('tools.qibla')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      {loading ? (
-        <LoadingState />
-      ) : !coords || direction === null ? (
-        <Surface style={{ margin: space[4] }}>
-          <Text variant="body">{t('qibla.locationNeeded')}</Text>
-          <Text variant="bodySmall" color="secondary">{t('qibla.locationNeededHint')}</Text>
-        </Surface>
-      ) : (
-        <View style={{ alignItems: 'center', paddingTop: space[8], paddingBottom: inTab ? 120 : 0 }}>
-          <View style={[styles.compass, { borderColor: colors.hairline, backgroundColor: colors.card }]}>
-            <View
-              style={{
-                position: 'absolute',
-                top: 14,
-                alignItems: 'center',
-                transform: [{ rotate: `${heading !== null ? -heading : 0}deg` }],
-              }}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: space[5],
+          paddingBottom: insets.bottom + (inTab ? 132 : space[6]),
+        }}
+      >
+        <View style={[styles.topBar, { flexDirection: 'row' }]}>
+          {inTab ? (
+            <View style={{ width: 34 }} />
+          ) : (
+            <AnimatedPressable
+              onPress={() => router.back()}
+              accessibilityLabel={t('common.back')}
+              style={[styles.iconBtn, { backgroundColor: colors.card }]}
             >
-              <Text variant="micro" font="uiBold" color="tertiary">N</Text>
-            </View>
-            <Ionicons
-              name="navigate"
-              size={110}
-              color={colors.primary}
-              style={{ transform: [{ rotate: `${rotation}deg` }] }}
-            />
-            <View style={styles.centerDot} />
-          </View>
-          <Text variant="caption" color="secondary" style={{ marginTop: space[5] }}>{t('qibla.heading')}</Text>
-          <Text variant="title" font="uiBold">
-            {heading !== null ? Math.round((direction - heading + 360) % 360) : Math.round(direction)}°
-          </Text>
-          {heading !== null ? (
-            <Text variant="micro" color="tertiary" style={{ marginTop: 2 }}>
-              {t('qibla.phoneHeading')}: {Math.round(heading)}°
-            </Text>
-          ) : null}
-          <Surface style={{ marginTop: space[6], marginHorizontal: space[4], alignItems: 'center' }}>
-            <Text variant="body" font="arabicBold" style={{ fontSize: 28 }}>الكعبة</Text>
-            <Text variant="bodySmall" color="secondary" style={{ marginTop: 2 }}>
-              {t('qibla.distance')}: {haversine(coords.lat, coords.lng, 21.4225, 39.8262).toFixed(0)} km
-            </Text>
-          </Surface>
+              <Ionicons name="chevron-back" size={20} color={colors.text} />
+            </AnimatedPressable>
+          )}
+          <View style={{ width: 34 }} />
         </View>
-      )}
+
+        <Text variant="micro" font="uiBold" color="tertiary" style={styles.kicker}>
+          {t('qibla.finding')}
+        </Text>
+        <Text variant="title" font="uiBold" style={{ marginTop: space[1] }}>
+          {t('qibla.kaabaMakkah')}
+        </Text>
+
+        {loading ? (
+          <LoadingState />
+        ) : !coords || direction === null ? (
+          <View style={[styles.emptyCard, { backgroundColor: colors.card }]}>
+            <Ionicons name="location-outline" size={28} color={colors.textSecondary} />
+            <Text variant="body" style={{ marginTop: space[2], textAlign: 'center' }}>{t('qibla.locationNeeded')}</Text>
+            <Text variant="caption" color="secondary" style={{ marginTop: 4, textAlign: 'center' }}>
+              {t('qibla.locationNeededHint')}
+            </Text>
+          </View>
+        ) : focusMode ? (
+          <View style={styles.focusWrap}>
+            <View
+              style={[
+                styles.bigArrow,
+                { transform: [{ rotate: `${rotation}deg` }], backgroundColor: colors.text },
+              ]}
+            />
+            <Text variant="bodySmall" color="secondary" style={{ marginTop: space[7], textAlign: 'center' }}>
+              {t('qibla.alignHint')}
+            </Text>
+          </View>
+        ) : (
+          <>
+            <View style={[styles.dial, { backgroundColor: colors.card, borderColor: colors.hairline }]}>
+              <View style={[styles.dialInner, { borderColor: colors.hairline }]} />
+              <View style={[StyleSheet.absoluteFill, { transform: [{ rotate: `${-(heading ?? 0)}deg` }] }]}>
+                {TICKS.map((i) => {
+                  const major = i % 5 === 0;
+                  return (
+                    <View key={i} style={[StyleSheet.absoluteFill, { transform: [{ rotate: `${i * 6}deg` }] }]}>
+                      <View
+                        style={{
+                          position: 'absolute',
+                          top: 10,
+                          left: '50%',
+                          marginLeft: major ? -1 : -0.75,
+                          width: major ? 2 : 1.5,
+                          height: major ? 10 : 5,
+                          borderRadius: 1,
+                          backgroundColor: major ? dialMajorColor : dialTickColor,
+                        }}
+                      />
+                    </View>
+                  );
+                })}
+                <View style={styles.northWrap}>
+                  <Text variant="micro" font="uiBold" style={{ color: colors.textSecondary, letterSpacing: 1 }}>
+                    N
+                  </Text>
+                </View>
+              </View>
+
+              {/* needle */}
+              <View style={[StyleSheet.absoluteFill, { transform: [{ rotate: `${rotation}deg` }] }]}>
+                <View style={[styles.needle, { backgroundColor: colors.primary, height: DIAL / 2 - 30 }]} />
+                <View style={[styles.needleTip, { borderBottomColor: colors.primary }]} />
+              </View>
+              <View style={[styles.centerDot, { backgroundColor: colors.text }]} />
+            </View>
+
+            <Text variant="display" font="uiBold" style={{ marginTop: space[7], letterSpacing: -1 }}>
+              {Math.round(distance ?? 0).toLocaleString('en-US')} km
+            </Text>
+            <Text variant="bodySmall" color="secondary" style={{ marginTop: 2 }}>
+              {t('qibla.toward')}
+            </Text>
+
+            <View style={styles.actions}>
+              <AnimatedPressable
+                onPress={() => setDetailsOpen(true)}
+                style={[styles.actionBtn, { backgroundColor: colors.card }]}
+              >
+                <Ionicons name="information-circle-outline" size={16} color={colors.text} />
+                <Text variant="bodySmall" font="uiBold">{t('qibla.details')}</Text>
+              </AnimatedPressable>
+              <AnimatedPressable
+                onPress={() => setFocusMode(true)}
+                style={[styles.actionBtn, { backgroundColor: colors.card }]}
+              >
+                <Ionicons name="navigate-outline" size={16} color={colors.text} />
+                <Text variant="bodySmall" font="uiBold">{t('qibla.direction')}</Text>
+              </AnimatedPressable>
+            </View>
+          </>
+        )}
+      </ScrollView>
+
+      <ResizableSheet visible={detailsOpen} onClose={() => setDetailsOpen(false)}>
+        <View style={{ paddingHorizontal: space[5], paddingBottom: insets.bottom + space[4] }}>
+          <Text variant="subheading" font="uiBold" style={{ marginBottom: space[4], textAlign: 'center' }}>
+            {t('qibla.details')}
+          </Text>
+          <DetailRow label={t('qibla.heading')} value={`${Math.round((direction ?? 0))}°`} />
+          <DetailRow label={t('qibla.phoneHeading')} value={heading !== null ? `${Math.round(heading)}°` : '—'} />
+          <DetailRow label={t('qibla.distance')} value={distance !== null ? `${Math.round(distance)} km` : '—'} />
+          <DetailRow
+            label={t('qibla.coordinates')}
+            value={coords ? `${coords.lat.toFixed(3)}, ${coords.lng.toFixed(3)}` : '—'}
+          />
+          <Text variant="caption" color="tertiary" style={{ marginTop: space[4], textAlign: 'center' }}>
+            {t('qibla.calibrate')}
+          </Text>
+        </View>
+      </ResizableSheet>
+    </View>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.detailRow, { borderBottomColor: colors.hairline }]}>
+      <Text variant="bodySmall" color="secondary">{label}</Text>
+      <Text variant="bodySmall" font="uiBold">{value}</Text>
     </View>
   );
 }
@@ -147,27 +244,83 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: space[3],
-    paddingVertical: space[3],
-    borderBottomWidth: StyleSheet.hairlineWidth * 2,
-  },
-  compass: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
+  topBar: { alignItems: 'center', justifyContent: 'space-between', paddingTop: space[3], paddingBottom: space[4] },
+  iconBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  kicker: { letterSpacing: 1.8, textTransform: 'uppercase' },
+  dial: {
+    width: DIAL,
+    height: DIAL,
+    borderRadius: DIAL / 2,
     borderWidth: StyleSheet.hairlineWidth * 2,
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'center',
+    marginTop: space[8],
+  },
+  dialInner: {
+    position: 'absolute',
+    width: DIAL - 46,
+    height: DIAL - 46,
+    borderRadius: (DIAL - 46) / 2,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  northWrap: { position: 'absolute', top: 22, left: 0, right: 0, alignItems: 'center' },
+  needle: {
+    position: 'absolute',
+    bottom: '50%',
+    left: '50%',
+    marginLeft: -1,
+    width: 2,
+    borderRadius: 1,
+  },
+  needleTip: {
+    position: 'absolute',
+    bottom: '50%',
+    left: '50%',
+    marginLeft: -6,
+    marginBottom: DIAL / 2 - 44,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderBottomWidth: 12,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
   },
   centerDot: {
     position: 'absolute',
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
+  },
+  bigArrow: {
     width: 10,
-    height: 10,
+    height: 116,
     borderRadius: 5,
-    backgroundColor: '#C9A227',
+    marginTop: space[6],
+  },
+  focusWrap: { alignItems: 'center', marginTop: space[8] },
+  actions: { flexDirection: 'row', gap: space[3], marginTop: space[7] },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space[2],
+    paddingVertical: 14,
+    borderRadius: 24,
+  },
+  emptyCard: {
+    marginTop: space[6],
+    padding: space[6],
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: space[3],
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
 });

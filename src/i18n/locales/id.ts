@@ -236,6 +236,7 @@ const id: Translation = {
     names99: '99 Nama',
     names99Hint: 'Nama-nama Allah beserta artinya',
     names99Search: 'Cari nama atau arti…',
+    names99Title: '99 Nama Allah',
     names99Meaning: 'Arti',
     fatawa: 'Fatwa',
     fatawaHint: 'Hukum halal dan haram',
@@ -284,6 +285,13 @@ const id: Translation = {
     away: 'derajat lagi',
     locationNeeded: 'Lokasi diperlukan',
     locationNeededHint: 'Aktifkan lokasi untuk arah kiblat',
+    finding: 'Mencari Kiblat',
+    kaabaMakkah: 'Ka\'bah · Makkah',
+    toward: 'menuju Makkah · putar untuk sejajar',
+    details: 'Detail',
+    direction: 'Arah',
+    alignHint: 'Putar ponsel hingga panah mengarah ke atas',
+    coordinates: 'Koordinat',
   },
 
   mosque: {

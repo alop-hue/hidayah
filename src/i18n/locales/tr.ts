@@ -236,6 +236,7 @@ const tr: Translation = {
     names99: '99 İsim',
     names99Hint: 'Allah\u0027ın güzel isimleri ve anlamları',
     names99Search: 'İsim veya anlam ara…',
+    names99Title: 'Allah\'ın 99 İsmi',
     names99Meaning: 'Anlam',
     fatawa: 'Fetvalar',
     fatawaHint: 'Helal ve haram hükümleri',
@@ -284,6 +285,13 @@ const tr: Translation = {
     away: 'derece uzakta',
     locationNeeded: 'Konum gerekli',
     locationNeededHint: 'Kıble yönü için konumu etkinleştir',
+    finding: 'Kıble Bulunuyor',
+    kaabaMakkah: 'Kâbe · Mekke',
+    toward: 'Mekke\'ye doğru · hizalamak için çevir',
+    details: 'Ayrıntılar',
+    direction: 'Yön',
+    alignHint: 'Ok yukarı bakana kadar telefonunu çevir',
+    coordinates: 'Koordinatlar',
   },
 
   mosque: {

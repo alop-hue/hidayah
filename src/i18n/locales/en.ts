@@ -234,6 +234,7 @@ const en = {
     names99: '99 Names',
     names99Hint: 'Names of Allah with meanings',
     names99Search: 'Search name or meaning…',
+    names99Title: '99 Names of Allah',
     names99Meaning: 'Meaning',
     tasbihCount: '{{n}}',
     fatawa: 'Fatawa',
@@ -282,6 +283,13 @@ const en = {
     away: 'degrees away',
     locationNeeded: 'Location needed',
     locationNeededHint: 'Enable location to compute the Qibla direction',
+    finding: 'Finding Qibla',
+    kaabaMakkah: 'Kaaba · Makkah',
+    toward: 'toward Makkah · turn to align',
+    details: 'Details',
+    direction: 'Direction',
+    alignHint: 'Turn your phone until the arrow points up',
+    coordinates: 'Coordinates',
   },
 
   mosque: {

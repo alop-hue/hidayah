@@ -2,15 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
-import { LoadingState, Segmented, Text } from '@/components/ui';
+import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
+import { LoadingState, Text } from '@/components/ui';
 import { getAdhkarByCategory, getAdhkarCategories, type AdhkarRow } from '@/db/queries';
 import { toArabicDigits } from '@/lib/digits';
 import { useTheme } from '@/theme/ThemeContext';
-import { radius, space } from '@/theme/tokens';
+import { space } from '@/theme/tokens';
 
 const ADH_KAR_BOOKS: [RegExp, string][] = [
   [/^Bukhari\b/i, 'صحيح البخاري'],
@@ -38,9 +39,18 @@ function arabicSource(src: string): string {
   return out;
 }
 
+const CATEGORY_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
+  morning: 'sunny-outline',
+  evening: 'moon-outline',
+  'after-prayer': 'time-outline',
+  sleep: 'bed-outline',
+  travel: 'airplane-outline',
+  general: 'sparkles-outline',
+};
+
 export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {}) {
   const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, mode } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [categories, setCategories] = useState<string[]>([]);
@@ -65,6 +75,7 @@ export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {})
     setItems(null);
     setItems(await getAdhkarByCategory(cat));
     setCounts({});
+    void Haptics.selectionAsync();
   };
 
   const bump = (id: number, count: number) => {
@@ -84,43 +95,98 @@ export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {})
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
       <View style={[styles.header, { flexDirection: rtl ? 'row-reverse' : 'row' }]}>
         {inTab ? (
-          <View style={{ width: 24 }} />
+          <View style={{ width: 38 }} />
         ) : (
-          <Pressable onPress={() => router.back()} hitSlop={8} accessibilityLabel={t('common.back')}>
-            <Ionicons name="chevron-back" size={24} color={colors.text} />
-          </Pressable>
+          <AnimatedPressable
+            onPress={() => router.back()}
+            accessibilityLabel={t('common.back')}
+            style={[styles.iconBtn, { backgroundColor: colors.card }]}
+          >
+            <Ionicons name="chevron-back" size={20} color={colors.text} />
+          </AnimatedPressable>
         )}
-        <Text variant="subheading" font="uiBold">{t('tools.dhikr')}</Text>
-        <Pressable onPress={resetAll} hitSlop={8} accessibilityLabel={t('dhikr.reset')}>
-          <Ionicons name="refresh" size={22} color={colors.textSecondary} />
-        </Pressable>
+        <View style={{ flex: 1, alignItems: rtl ? 'flex-end' : 'flex-start' }}>
+          <Text variant="title" font="uiBold" numberOfLines={1}>{t('tools.dhikr')}</Text>
+          <Text variant="caption" color="secondary" numberOfLines={1}>
+            {active ? t(`dhikr.categories.${active}`) : t('tools.dhikrHint')}
+          </Text>
+        </View>
+        <AnimatedPressable
+          onPress={resetAll}
+          accessibilityLabel={t('dhikr.reset')}
+          style={[styles.iconBtn, { backgroundColor: colors.card }]}
+        >
+          <Ionicons name="refresh" size={18} color={colors.textSecondary} />
+        </AnimatedPressable>
       </View>
 
-      <View style={{ padding: space[4] }}>
-        <Segmented
-          options={categories.map((c) => ({ value: c, label: t(`dhikr.categories.${c}`) }))}
-          value={active ?? categories[0] ?? ''}
-          onChange={(v) => select(v)}
-        />
-      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: space[5], gap: space[2], paddingVertical: space[3] }}
+        style={{ flexGrow: 0 }}
+      >
+        {categories.map((c) => {
+          const selected = active === c;
+          const icon = CATEGORY_ICONS[c] ?? 'leaf-outline';
+          return (
+            <AnimatedPressable
+              key={c}
+              haptic
+              onPress={() => void select(c)}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: selected ? colors.text : colors.card,
+                  borderColor: selected ? colors.text : colors.hairline,
+                },
+              ]}
+            >
+              <Ionicons name={icon} size={14} color={selected ? colors.bg : colors.textSecondary} />
+              <Text
+                variant="caption"
+                font="uiBold"
+                numberOfLines={1}
+                style={{ color: selected ? colors.bg : colors.textSecondary }}
+              >
+                {t(`dhikr.categories.${c}`)}
+              </Text>
+            </AnimatedPressable>
+          );
+        })}
+      </ScrollView>
 
       {!items ? (
         <LoadingState />
       ) : (
-        <FlatList showsVerticalScrollIndicator={false}
+        <FlatList
+          showsVerticalScrollIndicator={false}
           data={items}
           keyExtractor={(a) => String(a.id)}
-          contentContainerStyle={{ paddingBottom: insets.bottom + (inTab ? 132 : space[8]), paddingHorizontal: space[4] }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + (inTab ? 132 : space[8]), paddingHorizontal: space[5], paddingTop: space[2] }}
           renderItem={({ item }) => {
             const done = (counts[item.id] ?? 0) >= item.count;
+            const progress = Math.min(1, (counts[item.id] ?? 0) / Math.max(1, item.count));
             return (
-              <Pressable
+              <AnimatedPressable
                 onPress={() => bump(item.id, item.count)}
-                style={({ pressed }) => [styles.card, { backgroundColor: colors.card, borderColor: colors.hairline }, pressed && { opacity: 0.85 }]}
+                style={[
+                  styles.card,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: done ? colors.primary : colors.hairline,
+                  },
+                ]}
               >
-                <Text variant="body" font="arabicBold" style={{ color: colors.quranText, textAlign: isArabic ? 'right' : 'center', direction: 'rtl', lineHeight: 30 }}>
-                  {item.arabic}
-                </Text>
+                <View style={{ direction: 'rtl' }}>
+                  <Text
+                    variant="body"
+                    font="arabicBold"
+                    style={{ color: colors.quranText, textAlign: 'right', writingDirection: 'rtl', fontSize: 23, lineHeight: 40 }}
+                  >
+                    {item.arabic}
+                  </Text>
+                </View>
                 {!isArabic && item.transliteration ? (
                   <Text variant="bodySmall" color="secondary" style={{ marginTop: space[2], fontStyle: 'italic' }}>
                     {item.transliteration}
@@ -131,26 +197,35 @@ export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {})
                     {item.translation}
                   </Text>
                 ) : null}
+
+                <View style={[styles.progressTrack, { backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.06)' : 'rgba(255,255,255,0.07)' }]}>
+                  <View style={[styles.progressFill, { width: `${progress * 100}%`, backgroundColor: colors.primary }]} />
+                </View>
+
                 <View style={[styles.cardFooter, rtl && { flexDirection: 'row-reverse' }]}>
-                  <Text variant="caption" color="tertiary">
+                  <Text variant="caption" color="tertiary" numberOfLines={1} style={{ flex: 1 }}>
                     {t('dhikr.count', { n: isArabic ? toArabicDigits(item.count) : item.count })} ·{' '}
                     {isArabic ? toArabicDigits(arabicSource(item.source)) : item.source}
                   </Text>
-                  <Pressable
-                    onPress={() => bump(item.id, item.count)}
-                    hitSlop={6}
-                    style={[styles.countBtn, { borderColor: done ? colors.success : colors.hairlineStrong, backgroundColor: done ? colors.primarySoft : colors.bgSunken }]}
+                  <View
+                    style={[
+                      styles.countPill,
+                      {
+                        borderColor: done ? colors.primary : colors.hairline,
+                        backgroundColor: done ? colors.primarySoft : 'transparent',
+                      },
+                    ]}
                   >
-                    <Text variant="bodySmall" font="uiBold" color={done ? 'primary' : 'secondary'}>
+                    <Text variant="caption" font="uiBold" color={done ? 'primary' : 'secondary'}>
                       {done
                         ? t('dhikr.done')
                         : isArabic
                           ? toArabicDigits(`${counts[item.id] ?? 0}/${item.count}`)
                           : `${counts[item.id] ?? 0}/${item.count}`}
                     </Text>
-                  </Pressable>
+                  </View>
                 </View>
-              </Pressable>
+              </AnimatedPressable>
             );
           }}
         />
@@ -161,18 +236,30 @@ export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {})
 
 const styles = StyleSheet.create({
   header: {
+    alignItems: 'center',
+    gap: space[3],
+    paddingHorizontal: space[5],
+    paddingTop: space[3],
+    paddingBottom: space[1],
+  },
+  iconBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: space[3],
-    paddingVertical: space[3],
+    gap: 6,
+    paddingHorizontal: space[4],
+    paddingVertical: 10,
+    borderRadius: 22,
+    borderWidth: StyleSheet.hairlineWidth * 2,
   },
   card: {
     borderWidth: StyleSheet.hairlineWidth * 2,
-    borderRadius: radius.md,
+    borderRadius: 20,
     padding: space[4],
     marginBottom: space[3],
   },
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: space[3] },
-  countBtn: { paddingHorizontal: space[3], paddingVertical: space[1], borderRadius: radius.pill, borderWidth: 1 },
+  progressTrack: { height: 3, borderRadius: 2, marginTop: space[4], overflow: 'hidden' },
+  progressFill: { height: 3, borderRadius: 2 },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: space[3], gap: space[3] },
+  countPill: { paddingHorizontal: space[3], paddingVertical: 5, borderRadius: 14, borderWidth: 1 },
 });

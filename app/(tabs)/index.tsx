@@ -178,7 +178,7 @@ export default function HomeScreen() {
         </View>
 
         {/* prayer times card */}
-        <View style={styles.prayerCard}>
+        <View style={[styles.prayerCard, { backgroundColor: mode === 'light' ? colors.card : '#121316' }]}>
           {PRAYER_ORDER.map((name, idx) => {
             const active = result.next?.name === name;
             return (
@@ -187,7 +187,7 @@ export default function HomeScreen() {
                 style={[
                   styles.prayerRow,
                   idx > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.hairline },
-                  active && { backgroundColor: mode === 'light' ? colors.bgSunken : '#1A1C1F' },
+                  active && { backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.045)' : '#1A1C1F' },
                 ]}
               >
                 <View style={[styles.prayerIcon, { backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.05)' : 'rgba(255,255,255,0.05)' }]}>
@@ -253,7 +253,6 @@ const styles = StyleSheet.create({
     marginTop: space[4],
     borderRadius: radius.lg,
     overflow: 'hidden',
-    backgroundColor: '#121316',
   },
   prayerRow: {
     flexDirection: 'row',

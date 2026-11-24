@@ -236,6 +236,7 @@ const fr: Translation = {
     names99: '99 Noms',
     names99Hint: 'Les 99 noms d\u0027Allah avec leur sens',
     names99Search: 'Rechercher un nom ou un sens…',
+    names99Title: 'Les 99 Noms d\'Allah',
     names99Meaning: 'Signification',
     fatawa: 'Fatwas',
     fatawaHint: 'Règles halal et haram',
@@ -284,6 +285,13 @@ const fr: Translation = {
     away: 'degrés',
     locationNeeded: 'Localisation requise',
     locationNeededHint: 'Activez la localisation pour la direction de la qibla',
+    finding: 'Localisation de la Qibla',
+    kaabaMakkah: 'Kaaba · La Mecque',
+    toward: 'vers La Mecque · tournez pour aligner',
+    details: 'Détails',
+    direction: 'Direction',
+    alignHint: 'Tournez le téléphone jusqu\'à ce que la flèche pointe vers le haut',
+    coordinates: 'Coordonnées',
   },
 
   mosque: {

@@ -236,6 +236,7 @@ const ar: Translation = {
     names99: 'الأسماء الحسنى',
     names99Hint: 'أسماء الله الحسنى ومعانيها',
     names99Search: 'ابحث عن الاسم أو المعنى…',
+    names99Title: 'أسماء الله الحسنى',
     names99Meaning: 'المعنى',
     fatawa: 'فتاوى',
     fatawaHint: 'أحكام الحلال والحرام',
@@ -284,6 +285,13 @@ const ar: Translation = {
     away: 'درجة',
     locationNeeded: 'الموقع مطلوب',
     locationNeededHint: 'فعّل الموقع لحساب اتجاه القبلة',
+    finding: 'تحديد القبلة',
+    kaabaMakkah: 'الكعبة · مكة',
+    toward: 'باتجاه مكة · أدر لتصطف',
+    details: 'التفاصيل',
+    direction: 'الاتجاه',
+    alignHint: 'أدر هاتفك حتى يشير السهم إلى الأعلى',
+    coordinates: 'الإحداثيات',
   },
 
   mosque: {

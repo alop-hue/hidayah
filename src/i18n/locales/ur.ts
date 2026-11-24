@@ -236,6 +236,7 @@ const ur: Translation = {
     names99: '99 نام',
     names99Hint: 'اللہ کے نام اور ان کے معانی',
     names99Search: 'نام یا معنی تلاش کریں…',
+    names99Title: 'اللہ کے 99 نام',
     names99Meaning: 'معنی',
     fatawa: 'فتاوى',
     fatawaHint: 'حلال و حرام احکام',
@@ -284,6 +285,13 @@ const ur: Translation = {
     away: 'ڈگری',
     locationNeeded: 'مقام درکار',
     locationNeededHint: 'قبلہ کی سمت کے لیے مقام چالو کریں',
+    finding: 'قبلہ تلاش',
+    kaabaMakkah: 'کعبہ · مکہ',
+    toward: 'مکہ کی طرف · سیدھا کرنے کے لیے گھمائیں',
+    details: 'تفصیلات',
+    direction: 'سمت',
+    alignHint: 'فون گھمائیں جب تک تیر اوپر کی طرف نہ ہو',
+    coordinates: 'متناسقات',
   },
 
   mosque: {
