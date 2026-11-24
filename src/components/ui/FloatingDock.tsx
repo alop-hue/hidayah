@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MiniPlayer } from '@/components/audio/MiniPlayer';
 import { Text } from '@/components/ui';
 import { DockIcon } from '@/components/ui/DockIcons';
+import { dockBlurTarget } from '@/components/ui/dockBlur';
 import { useTheme } from '@/theme/ThemeContext';
 import { space } from '@/theme/tokens';
 
@@ -32,7 +33,7 @@ const TABS = [
 
 // Fade ramp painted above the dock (top → bottom), so the scrolling content
 // melts into the glass instead of being cut off by a hard edge.
-const FADE = Array.from({ length: 22 }, (_, i) => Math.pow((i + 1) / 22, 2.1) * 0.95);
+const FADE = Array.from({ length: 30 }, (_, i) => Math.pow((i + 1) / 30, 1.9));
 
 /**
  * Floating liquid-glass navigation, matched to the Hidayah reference.
@@ -145,6 +146,7 @@ export function CustomTabBar({ state, navigation }: any) {
         {/* real blur where available */}
         {BlurView ? (
           <BlurView
+            blurTarget={dockBlurTarget}
             intensity={Platform.OS === 'android' ? 90 : 45}
             tint={mode === 'light' ? 'light' : 'dark'}
             blurMethod="dimezisBlurViewSdk31Plus"
@@ -197,8 +199,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: space[4],
   },
-  fadeZone: { height: 92, marginHorizontal: -space[4], flexDirection: 'column' },
-  playerSlot: { marginBottom: space[2] },
+  fadeZone: { height: 112, marginHorizontal: -space[4], flexDirection: 'column' },
+  playerSlot: { marginBottom: 0 },
   dock: {
     borderRadius: 34,
     borderWidth: StyleSheet.hairlineWidth * 2,

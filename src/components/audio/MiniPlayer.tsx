@@ -144,6 +144,7 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 
 const styles = StyleSheet.create({
   bar: {
+    marginBottom: space[2],
     borderWidth: StyleSheet.hairlineWidth * 2,
     borderRadius: radius.lg,
     overflow: 'hidden',
