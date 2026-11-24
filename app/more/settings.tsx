@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { ListRow, SectionLabel, Text, Toggle } from '@/components/ui';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SUPPORTED_LANGS } from '@/i18n';
 import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
@@ -32,17 +33,7 @@ export default function SettingsScreen({ inTab = false }: { inTab?: boolean } = 
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
-        {inTab ? (
-          <View style={{ width: 24 }} />
-        ) : (
-          <Pressable onPress={() => router.back()} hitSlop={8}>
-            <Ionicons name="chevron-back" size={24} color={colors.text} />
-          </Pressable>
-        )}
-        <Text variant="subheading" font="uiBold">{t('settings.title')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <ScreenHeader title={t('settings.title')} onBack={inTab ? undefined : () => router.back()} />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: space[3], paddingBottom: insets.bottom + (inTab ? 132 : space[8]) }}>
 

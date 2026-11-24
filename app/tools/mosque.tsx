@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import * as Location from 'expo-location';
 
 import { Button, EmptyState, LoadingState, Segmented, Text } from '@/components/ui';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { ResizableSheet } from '@/components/ui/Sheet';
 import { addUserMosque, deleteUserMosque, getUserMosques, type UserMosque } from '@/db/userdb';
 import { useSettings } from '@/store/settings';
@@ -203,13 +204,7 @@ export default function MosqueScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text variant="subheading" font="uiBold">{t('tools.mosque')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <ScreenHeader title={t('tools.mosque')} subtitle={t('tools.mosqueHint')} onBack={() => router.back()} />
 
       <View style={styles.radiusRow}>
         <Text variant="caption" color="secondary">{t('mosque.radius')}</Text>

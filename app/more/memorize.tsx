@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { LoadingState, Text } from '@/components/ui';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { getSurahs, type SurahRow } from '@/db/queries';
 import { getMemorizedCounts } from '@/db/userdb';
 import { useTheme } from '@/theme/ThemeContext';
@@ -35,13 +36,7 @@ export default function MemorizeScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text variant="subheading" font="uiBold">{t('memorize.title')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <ScreenHeader title={t('memorize.title')} onBack={() => router.back()} />
 
       <View style={[styles.summary, { backgroundColor: colors.primarySoft }]}>
         <Ionicons name="school" size={28} color={colors.primary} />

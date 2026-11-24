@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { EmptyState, LoadingState, Segmented, Text } from '@/components/ui';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { getAyah, getHadithByBook, getSurah, type HadithRow } from '@/db/queries';
 import { getAyahBookmarks, getHadithBookmarks } from '@/db/userdb';
 import { useTheme } from '@/theme/ThemeContext';
@@ -52,13 +53,7 @@ export default function BookmarksScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text variant="subheading" font="uiBold">{t('quran.inBookmarks')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <ScreenHeader title={t('quran.inBookmarks')} onBack={() => router.back()} />
 
       <View style={{ padding: space[4] }}>
         <Segmented<Tab>

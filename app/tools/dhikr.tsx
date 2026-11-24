@@ -93,7 +93,7 @@ export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {})
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { flexDirection: rtl ? 'row-reverse' : 'row' }]}>
+      <View style={[styles.header, ]}>
         {inTab ? (
           <View style={{ width: 38 }} />
         ) : (
@@ -147,7 +147,7 @@ export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {})
                 variant="caption"
                 font="uiBold"
                 numberOfLines={1}
-                style={{ color: selected ? colors.bg : colors.textSecondary }}
+                style={{ color: selected ? colors.bg : colors.textSecondary, fontSize: 12, lineHeight: 18 }}
               >
                 {t(`dhikr.categories.${c}`)}
               </Text>
@@ -202,7 +202,7 @@ export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {})
                   <View style={[styles.progressFill, { width: `${progress * 100}%`, backgroundColor: colors.primary }]} />
                 </View>
 
-                <View style={[styles.cardFooter, rtl && { flexDirection: 'row-reverse' }]}>
+                <View style={styles.cardFooter}>
                   <Text variant="caption" color="tertiary" numberOfLines={1} style={{ flex: 1 }}>
                     {t('dhikr.count', { n: isArabic ? toArabicDigits(item.count) : item.count })} ·{' '}
                     {isArabic ? toArabicDigits(arabicSource(item.source)) : item.source}

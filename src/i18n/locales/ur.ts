@@ -6,6 +6,13 @@ const ur: Translation = {
 
   tabs: { home: 'ہوم', quran: 'قرآن', hadith: 'حدیث', tools: 'آلات', more: 'مزید', qibla: 'قبلہ', dhikr: 'ذکر', settings: 'ترتیبات' },
 
+  gate: {
+    preparing: 'مقدس نصوص تیار کیے جا رہے ہیں…',
+    indexing: 'تلاش کی فہرست بنائی جا رہی ہے…',
+    error: 'ایپ تیار کرتے وقت خرابی پیش آئی۔',
+    retry: 'دوبارہ کوشش',
+  },
+
   welcome: {
     tagline: 'ہدایت، ایک آیت کے ساتھ۔',
     lang: 'اپنی زبان چنیں',

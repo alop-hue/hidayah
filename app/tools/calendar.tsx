@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { Text } from '@/components/ui';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { hijriMonthGrid, hijriDate, hijriParts, ISLAMIC_EVENTS, eventLabel } from '@/services/prayer';
 import { useTheme } from '@/theme/ThemeContext';
 import { radius, space } from '@/theme/tokens';
@@ -81,13 +82,7 @@ export default function CalendarScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text variant="subheading" font="uiBold">{t('tools.calendar')}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <ScreenHeader title={t('tools.calendar')} subtitle={t('tools.calendarHint')} onBack={() => router.back()} />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + space[8] }}>
       <View style={styles.monthNav}>

@@ -6,6 +6,13 @@ const fr: Translation = {
 
   tabs: { home: 'Accueil', quran: 'Coran', hadith: 'Hadith', tools: 'Outils', more: 'Plus', qibla: 'Qibla', dhikr: 'Dhikr', settings: 'Réglages' },
 
+  gate: {
+    preparing: 'Préparation des textes sacrés…',
+    indexing: 'Indexation de la recherche…',
+    error: 'Une erreur est survenue lors de la préparation.',
+    retry: 'Réessayer',
+  },
+
   welcome: {
     tagline: 'La guidance, verset après verset.',
     lang: 'Choisissez votre langue',

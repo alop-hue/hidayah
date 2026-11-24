@@ -41,6 +41,7 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
 
   const pickLanguage = (code: AppLang) => {
     setLang(code);
+    setLanguage(code);
     changeLanguage(code);
   };
 
@@ -143,12 +144,14 @@ export function WelcomeScreen({ onDone }: { onDone: () => void }) {
                 {t('welcome.q1')}
               </Text>
               {option(t('welcome.q1a'), reading === 'ar', () => setReading('ar'), 'book-outline')}
-              {option(
-                t('welcome.q1b', { language: langName }),
-                reading === 'app',
-                () => setReading('app'),
-                'albums-outline',
-              )}
+              {lang !== 'ar'
+                ? option(
+                    t('welcome.q1b', { language: langName }),
+                    reading === 'app',
+                    () => setReading('app'),
+                    'albums-outline',
+                  )
+                : null}
               {lang !== 'en'
                 ? option(t('welcome.q1c'), reading === 'en', () => setReading('en'), 'language-outline')
                 : null}

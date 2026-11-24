@@ -6,6 +6,13 @@ const tr: Translation = {
 
   tabs: { home: 'Ana Sayfa', quran: 'Kur\'an', hadith: 'Hadis', tools: 'Araçlar', more: 'Daha Fazla', qibla: 'Kıble', dhikr: 'Zikir', settings: 'Ayarlar' },
 
+  gate: {
+    preparing: 'Kutsal metinler hazırlanıyor…',
+    indexing: 'Arama dizini oluşturuluyor…',
+    error: 'Uygulama hazırlanırken bir hata oluştu.',
+    retry: 'Tekrar dene',
+  },
+
   welcome: {
     tagline: 'Her ayet bir rehber.',
     lang: 'Dilini seç',

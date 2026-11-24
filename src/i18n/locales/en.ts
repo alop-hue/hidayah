@@ -4,6 +4,13 @@ const en = {
 
   tabs: { home: 'Home', quran: 'Quran', hadith: 'Hadith', tools: 'Tools', more: 'More', qibla: 'Qibla', dhikr: 'Dhikr', settings: 'Settings' },
 
+  gate: {
+    preparing: 'Preparing the sacred texts…',
+    indexing: 'Indexing for search…',
+    error: 'Something went wrong while preparing the app.',
+    retry: 'Retry',
+  },
+
   welcome: {
     tagline: 'Guidance, one verse at a time.',
     lang: 'Choose your language',

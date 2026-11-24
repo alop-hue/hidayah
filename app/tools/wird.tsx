@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { Button, Segmented, Surface, Text } from '@/components/ui';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { useSettings, type WirdGoal } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
 import { fontStack, radius, space } from '@/theme/tokens';
@@ -45,15 +46,7 @@ export default function WirdScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <Text variant="title" font="uiBold">
-          {t('wird.title')}
-        </Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <ScreenHeader title={t('wird.title')} onBack={() => router.back()} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}

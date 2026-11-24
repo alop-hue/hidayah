@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Clipboard } from 'react-native';
 
 import { LoadingState, Text } from '@/components/ui';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { ResizableSheet } from '@/components/ui/Sheet';
 import { getHadithByBook, type HadithBookRow, type HadithRow } from '@/db/queries';
 import { getHadithBooks } from '@/db/queries';
@@ -73,20 +74,11 @@ export default function HadithBookScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View style={[styles.header, { backgroundColor: colors.bgElevated, borderBottomColor: colors.hairline }]}>
-        <Pressable onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </Pressable>
-        <View style={{ alignItems: 'center', flex: 1 }}>
-          <Text variant="subheading" font={isArabic ? 'arabicBold' : 'uiBold'} numberOfLines={1} style={isArabic ? styles.rtlTitle : undefined}>
-            {isArabic ? (book?.title_arabic ?? book?.title ?? params.book) : (book?.title ?? params.book)}
-          </Text>
-          <Text variant="caption" color="secondary" style={isArabic ? styles.rtlTitle : undefined}>
-            {t('hadith.by', { author: isArabic ? (book?.author_arabic ?? book?.author ?? '') : (book?.author ?? '') })}
-          </Text>
-        </View>
-        <View style={{ width: 24 }} />
-      </View>
+      <ScreenHeader
+        title={isArabic ? (book?.title_arabic ?? book?.title ?? params.book) : (book?.title ?? params.book)}
+        subtitle={t('hadith.by', { author: isArabic ? (book?.author_arabic ?? book?.author ?? '') : (book?.author ?? '') })}
+        onBack={() => router.back()}
+      />
       {!hadiths ? (
         <LoadingState />
       ) : (

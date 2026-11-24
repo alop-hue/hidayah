@@ -92,10 +92,10 @@ export default function QiblaScreen({ inTab = false }: { inTab?: boolean } = {})
           paddingBottom: insets.bottom + (inTab ? 132 : space[6]),
         }}
       >
-        <View style={[styles.topBar, { flexDirection: 'row' }]}>
-          {inTab ? (
-            <View style={{ width: 34 }} />
-          ) : (
+        {inTab ? (
+          <View style={{ height: space[6] }} />
+        ) : (
+          <View style={[styles.topBar, { flexDirection: 'row' }]}>
             <AnimatedPressable
               onPress={() => router.back()}
               accessibilityLabel={t('common.back')}
@@ -103,9 +103,9 @@ export default function QiblaScreen({ inTab = false }: { inTab?: boolean } = {})
             >
               <Ionicons name="chevron-back" size={20} color={colors.text} />
             </AnimatedPressable>
-          )}
-          <View style={{ width: 34 }} />
-        </View>
+            <View style={{ width: 34 }} />
+          </View>
+        )}
 
         <Text variant="micro" font="uiBold" color="tertiary" style={styles.kicker}>
           {t('qibla.finding')}
@@ -140,7 +140,7 @@ export default function QiblaScreen({ inTab = false }: { inTab?: boolean } = {})
           <>
             <View style={[styles.dial, { backgroundColor: colors.card, borderColor: colors.hairline }]}>
               <View style={[styles.dialInner, { borderColor: colors.hairline }]} />
-              <View style={[StyleSheet.absoluteFill, { transform: [{ rotate: `${-(heading ?? 0)}deg` }] }]}>
+              <View style={StyleSheet.absoluteFill}>
                 {TICKS.map((i) => {
                   const major = i % 5 === 0;
                   return (
@@ -175,7 +175,12 @@ export default function QiblaScreen({ inTab = false }: { inTab?: boolean } = {})
               <View style={[styles.centerDot, { backgroundColor: colors.text }]} />
             </View>
 
-            <Text variant="display" font="uiBold" style={{ marginTop: space[7], letterSpacing: -1 }}>
+            <View style={[styles.arrow, { transform: [{ rotate: `${rotation}deg` }] }]}>
+              <View style={[styles.arrowHead, { borderBottomColor: colors.text }]} />
+              <View style={[styles.arrowShaft, { backgroundColor: colors.text }]} />
+            </View>
+
+            <Text variant="display" font="uiBold" style={{ marginTop: space[5], letterSpacing: -1 }}>
               {Math.round(distance ?? 0).toLocaleString('en-US')} km
             </Text>
             <Text variant="bodySmall" color="secondary" style={{ marginTop: 2 }}>
@@ -293,6 +298,17 @@ const styles = StyleSheet.create({
     height: 9,
     borderRadius: 4.5,
   },
+  arrow: { alignItems: 'center', marginTop: space[5] },
+  arrowHead: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 15,
+    borderRightWidth: 15,
+    borderBottomWidth: 19,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+  },
+  arrowShaft: { width: 6, height: 52, borderRadius: 3, marginTop: -1 },
   bigArrow: {
     width: 10,
     height: 116,

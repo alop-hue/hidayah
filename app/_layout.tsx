@@ -41,8 +41,8 @@ function GateScreen({ gate, retry }: { gate: Exclude<GateState, 'ready'>; retry:
     <View style={[styles.gate, { backgroundColor: colors.bg }]}>
       {gate === 'error' ? (
         <View style={{ alignItems: 'center', gap: 12 }}>
-          <Text variant="subheading">Something went wrong while preparing the app.</Text>
-          <Button title="Retry" onPress={retry} />
+          <Text variant="subheading" style={{ textAlign: 'center' }}>{i18n.t('gate.error')}</Text>
+          <Button title={i18n.t('gate.retry')} onPress={retry} />
         </View>
       ) : (
         <View style={{ alignItems: 'center', gap: 8 }}>
@@ -50,7 +50,7 @@ function GateScreen({ gate, retry }: { gate: Exclude<GateState, 'ready'>; retry:
             هداية
           </Text>
           <LoadingState
-            label={gate === 'unpacking' ? 'Preparing the sacred texts…' : 'Indexing for search…'}
+            label={gate === 'unpacking' ? i18n.t('gate.preparing') : i18n.t('gate.indexing')}
           />
         </View>
       )}
@@ -60,8 +60,8 @@ function GateScreen({ gate, retry }: { gate: Exclude<GateState, 'ready'>; retry:
 
 function AppShell() {
   const { colors } = useTheme();
-  const language = useSettings((s) => s.language);
-  const rtl = language ? isRtl(language) : false;
+  const language = i18n.language;
+  const rtl = isRtl(language);
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, direction: rtl ? 'rtl' : 'ltr' }}>
       <SystemBars style={colors.mode === 'light' ? 'dark' : 'light'} hidden={{ navigationBar: true }} />

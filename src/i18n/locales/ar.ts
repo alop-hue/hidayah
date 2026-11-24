@@ -6,6 +6,13 @@ const ar: Translation = {
 
   tabs: { home: 'الرئيسية', quran: 'القرآن', hadith: 'الحديث', tools: 'أدوات', more: 'المزيد', qibla: 'القبلة', dhikr: 'الذكر', settings: 'الإعدادات' },
 
+  gate: {
+    preparing: 'تجهيز النصوص المقدسة…',
+    indexing: 'فهرسة البحث…',
+    error: 'حدث خطأ أثناء تجهيز التطبيق.',
+    retry: 'إعادة المحاولة',
+  },
+
   welcome: {
     tagline: 'هداية، آيةً بعد آية.',
     lang: 'اختر لغتك',

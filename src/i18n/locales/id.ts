@@ -6,6 +6,13 @@ const id: Translation = {
 
   tabs: { home: 'Beranda', quran: 'Al-Qur\'an', hadith: 'Hadis', tools: 'Alat', more: 'Lainnya', qibla: 'Kiblat', dhikr: 'Zikir', settings: 'Pengaturan' },
 
+  gate: {
+    preparing: 'Menyiapkan teks suci…',
+    indexing: 'Mengindeks pencarian…',
+    error: 'Terjadi kesalahan saat menyiapkan aplikasi.',
+    retry: 'Coba lagi',
+  },
+
   welcome: {
     tagline: 'Petunjuk, ayat demi ayat.',
     lang: 'Pilih bahasamu',

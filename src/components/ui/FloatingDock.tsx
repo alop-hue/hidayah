@@ -32,7 +32,7 @@ const TABS = [
 
 // Fade ramp painted above the dock (top → bottom), so the scrolling content
 // melts into the glass instead of being cut off by a hard edge.
-const FADE = [0.02, 0.05, 0.09, 0.14, 0.2, 0.28, 0.38, 0.5, 0.64, 0.78];
+const FADE = Array.from({ length: 22 }, (_, i) => Math.pow((i + 1) / 22, 2.1) * 0.95);
 
 /**
  * Floating liquid-glass navigation, matched to the Hidayah reference.
@@ -145,14 +145,14 @@ export function CustomTabBar({ state, navigation }: any) {
         {/* real blur where available */}
         {BlurView ? (
           <BlurView
-            intensity={Platform.OS === 'android' ? 65 : 35}
+            intensity={Platform.OS === 'android' ? 90 : 45}
             tint={mode === 'light' ? 'light' : 'dark'}
             blurMethod="dimezisBlurViewSdk31Plus"
             style={StyleSheet.absoluteFill}
           />
         ) : null}
         {/* tint + top specular highlight (liquid glass) */}
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.glass, opacity: 0.7 }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.glass, opacity: 0.52 }]} />
         <View style={[styles.specular, { backgroundColor: mode === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.16)' }]} />
         <View
           ref={rowRef}
@@ -162,7 +162,7 @@ export function CustomTabBar({ state, navigation }: any) {
               rowX.current = x;
             });
           }}
-          style={[styles.row, { flexDirection: rtl ? 'row-reverse' : 'row' }]}
+          style={[styles.row, { flexDirection: 'row', direction: rtl ? 'rtl' : 'ltr' }]}
           {...pan.panHandlers}
         >
           {tabWidth > 0 ? (
@@ -173,7 +173,7 @@ export function CustomTabBar({ state, navigation }: any) {
                 pillStyle,
                 {
                   width: tabWidth - 4,
-                  backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.05)' : 'rgba(255,255,255,0.12)',
+                  backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.06)' : 'rgba(255,255,255,0.16)',
                   borderColor: mode === 'light' ? 'rgba(14,15,17,0.04)' : 'rgba(255,255,255,0.06)',
                 },
               ]}
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: space[4],
   },
-  fadeZone: { height: 56, marginHorizontal: -space[4], flexDirection: 'column' },
+  fadeZone: { height: 92, marginHorizontal: -space[4], flexDirection: 'column' },
   playerSlot: { marginBottom: space[2] },
   dock: {
     borderRadius: 34,
