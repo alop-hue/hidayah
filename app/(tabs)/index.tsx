@@ -323,7 +323,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: space[4] },
-  tileWrap: { flex: 1 },
+  tileWrap: { width: '48.3%', flexGrow: 1 },
   exploreHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   tuneBtn: { width: 30, height: 30, borderRadius: 15, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center' },
   customRow: { flexDirection: 'row', alignItems: 'center', gap: space[2], paddingVertical: space[3], borderBottomWidth: StyleSheet.hairlineWidth },
@@ -368,8 +368,7 @@ const styles = StyleSheet.create({
   continueIcon: { width: 34, height: 34, borderRadius: radius.sm + 2, alignItems: 'center', justifyContent: 'center' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space[3] },
   tile: {
-    width: '48.3%',
-    flexGrow: 1,
+    width: '100%',
     padding: space[4],
     borderRadius: radius.lg,
     minHeight: 118,

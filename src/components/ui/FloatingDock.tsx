@@ -58,23 +58,11 @@ export function CustomTabBar({ state, navigation }: any) {
   const [tabXs, setTabXs] = useState<number[]>([]);
   const [tabW, setTabW] = useState(0);
 
-  const pillX = useSharedValue(0);
-  const pillW = useSharedValue(0);
-  const pillStyle = useAnimatedStyle(() => ({
-    left: pillX.value,
-    width: Math.max(0, pillW.value),
-  }));
+
   const tabXsRef = useRef<number[]>([]);
   tabXsRef.current = tabXs;
   const tabWRef = useRef(0);
   tabWRef.current = tabW;
-
-  useEffect(() => {
-    const x = tabXs[state.index];
-    if (typeof x !== 'number') return;
-    pillX.value = withSpring(x + 2, { damping: 18, stiffness: 220, mass: 0.7 });
-    pillW.value = withTiming(Math.max(0, tabW - 4), { duration: 180 });
-  }, [state.index, tabXs, tabW, pillX, pillW]);
 
   const goTo = (index: number) => {
     const clamped = Math.max(0, Math.min(TABS.length - 1, index));
@@ -137,6 +125,7 @@ export function CustomTabBar({ state, navigation }: any) {
         }}
         style={({ pressed }) => [styles.tab, pressed && { opacity: 0.7 }]}
       >
+        <TabHighlight active={focused} />
         <View style={styles.iconCapsule}>
           <DockIcon name={tab.icon} color={color} active={focused} />
         </View>
@@ -193,24 +182,37 @@ export function CustomTabBar({ state, navigation }: any) {
           style={styles.row}
           {...pan.panHandlers}
         >
-          {tabW > 0 && typeof tabXs[state.index] === 'number' ? (
-            <Animated.View
-              pointerEvents="none"
-              style={[
-                styles.pill,
-                pillStyle,
-                {
-                  backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.06)' : 'rgba(255,255,255,0.16)',
-                  borderColor: mode === 'light' ? 'rgba(14,15,17,0.04)' : 'rgba(255,255,255,0.06)',
-                },
-              ]}
-            />
-          ) : null}
           {items}
         </View>
       </View>
       </View>
     </View>
+  );
+}
+
+/**
+ * Selection highlight is painted *inside* its own tab, so it can never drift:
+ * no absolute coordinates, no transform, no RTL maths.
+ */
+function TabHighlight({ active }: { active: boolean }) {
+  const { colors, mode } = useTheme();
+  const progress = useSharedValue(active ? 1 : 0);
+  useEffect(() => {
+    progress.value = withTiming(active ? 1 : 0, { duration: 190 });
+  }, [active, progress]);
+  const style = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [{ scale: 0.92 + progress.value * 0.08 }],
+  }));
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        styles.tabHighlight,
+        { backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.07)' : 'rgba(255,255,255,0.14)', borderColor: colors.hairline },
+        style,
+      ]}
+    />
   );
 }
 
@@ -257,10 +259,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: space[2],
     paddingVertical: 6,
   },
-  pill: {
+  tabHighlight: {
     position: 'absolute',
-    top: 12,
-    bottom: 12,
+    left: 4,
+    right: 4,
+    top: 6,
+    bottom: 6,
     borderRadius: 22,
     borderWidth: StyleSheet.hairlineWidth,
   },
