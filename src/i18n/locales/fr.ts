@@ -1,7 +1,7 @@
 import type { Translation } from './en';
 
 const fr: Translation = {
-  appName: 'Noor',
+  appName: 'هداية',
   appTagline: 'Coran · Prière · Dhikr',
 
   tabs: { home: 'Accueil', quran: 'Coran', hadith: 'Hadith', tools: 'Outils', more: 'Plus', qibla: 'Qibla', dhikr: 'Dhikr', settings: 'Réglages' },
@@ -412,7 +412,7 @@ const fr: Translation = {
     dndHint: 'Les alarmes exactes sonnent même en DND',
     perPrayerSubtitle: 'Choisissez les prières à notifier',
     battery: 'Fonctionnement en arrière-plan',
-    batteryHint: 'Excluez Noor de l’optimisation batterie pour recevoir les rappels avec l’app fermée',
+    batteryHint: 'Excluez Hidayah de l’optimisation batterie pour recevoir les rappels avec l’app fermée',
     batteryOemHint: 'Sur les téléphones à gestion agressive de la batterie, activez aussi le démarrage automatique dans les réglages système',
     testDelayed: 'Test dans 10 secondes',
     testDelayedHint: 'Mettez l’app en arrière-plan — une notification doit arriver dans 10 secondes',
@@ -422,7 +422,7 @@ const fr: Translation = {
     privacy: 'Politique de confidentialité',
     terms: 'Conditions d\'utilisation',
     licenses: 'Licences open source',
-    about: 'À propos de Noor',
+    about: 'À propos de Hidayah',
     lastUpdated: 'Dernière mise à jour',
     contactPlaceholder: 'developer@example.com',
   },
@@ -485,14 +485,14 @@ const fr: Translation = {
 
   feedback: {
     title: 'Envoyer un commentaire',
-    subtitle: 'Aidez-nous à améliorer Noor. Votre commentaire est envoyé directement au développeur.',
+    subtitle: 'Aidez-nous à améliorer Hidayah. Votre commentaire est envoyé directement au développeur.',
     subject: 'Sujet',
     subjectPlaceholder: 'De quoi s\'agit-il?',
     message: 'Message',
     messagePlaceholder: 'Dites-nous ce que vous pensez, signalez un bug ou suggérez une fonctionnalité…',
     send: 'Envoyer le commentaire',
     messageRequired: 'Veuillez entrer un message',
-    defaultSubject: 'Commentaire de l\'application Noor',
+    defaultSubject: 'Commentaire de l\'application Hidayah',
     thanks: 'Merci!',
     thanksMessage: 'Votre commentaire a été préparé. Votre application de messagerie s\'ouvrira pour l\'envoyer.',
     error: 'Impossible d\'ouvrir l\'email',

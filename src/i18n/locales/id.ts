@@ -1,7 +1,7 @@
 import type { Translation } from './en';
 
 const id: Translation = {
-  appName: 'Noor',
+  appName: 'هداية',
   appTagline: 'Al-Qur\'an · Shalat · Zikir',
 
   tabs: { home: 'Beranda', quran: 'Al-Qur\'an', hadith: 'Hadis', tools: 'Alat', more: 'Lainnya', qibla: 'Kiblat', dhikr: 'Zikir', settings: 'Pengaturan' },
@@ -412,7 +412,7 @@ const id: Translation = {
     dndHint: 'Alarm presisi tetap berbunyi di DND',
     perPrayerSubtitle: 'Pilih shalat yang ingin diingatkan',
     battery: 'Berjalan di latar belakang',
-    batteryHint: 'Keluarkan Noor dari optimasi baterai agar pengingat tetap sampai saat aplikasi ditutup',
+    batteryHint: 'Keluarkan Hidayah dari optimasi baterai agar pengingat tetap sampai saat aplikasi ditutup',
     batteryOemHint: 'Di ponsel dengan pengelolaan baterai agresif, aktifkan juga Mulai otomatis di pengaturan sistem',
     testDelayed: 'Uji dalam 10 detik',
     testDelayedHint: 'Pindahkan aplikasi ke latar belakang — notifikasi harus tiba dalam 10 detik',
@@ -422,7 +422,7 @@ const id: Translation = {
     privacy: 'Kebijakan privasi',
     terms: 'Ketentuan layanan',
     licenses: 'Lisensi sumber terbuka',
-    about: 'Tentang Noor',
+    about: 'Tentang Hidayah',
     lastUpdated: 'Terakhir diperbarui',
     contactPlaceholder: 'developer@example.com',
   },
@@ -485,14 +485,14 @@ const id: Translation = {
 
   feedback: {
     title: 'Kirim Masukan',
-    subtitle: 'Bantu kami meningkatkan Noor. Masukan Anda dikirim langsung ke pengembang.',
+    subtitle: 'Bantu kami meningkatkan Hidayah. Masukan Anda dikirim langsung ke pengembang.',
     subject: 'Subjek',
     subjectPlaceholder: 'Tentang apa ini?',
     message: 'Pesan',
     messagePlaceholder: 'Beritahu kami pendapat Anda, laporkan bug, atau sarankan fitur…',
     send: 'Kirim masukan',
     messageRequired: 'Harap masukkan pesan',
-    defaultSubject: 'Masukan Aplikasi Noor',
+    defaultSubject: 'Masukan Aplikasi Hidayah',
     thanks: 'Terima kasih!',
     thanksMessage: 'Masukan Anda telah disiapkan. Aplikasi email Anda akan terbuka untuk mengirimnya.',
     error: 'Tidak dapat membuka email',

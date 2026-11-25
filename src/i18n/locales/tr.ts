@@ -1,7 +1,7 @@
 import type { Translation } from './en';
 
 const tr: Translation = {
-  appName: 'Noor',
+  appName: 'هداية',
   appTagline: 'Kur\'an · Namaz · Zikir',
 
   tabs: { home: 'Ana Sayfa', quran: 'Kur\'an', hadith: 'Hadis', tools: 'Araçlar', more: 'Daha Fazla', qibla: 'Kıble', dhikr: 'Zikir', settings: 'Ayarlar' },
@@ -412,7 +412,7 @@ const tr: Translation = {
     dndHint: 'Hassas alarmlar açıkken alarmlar DND\'de de çalar',
     perPrayerSubtitle: 'Hangi namazların bildireceğini seç',
     battery: 'Arka planda çalıştırma',
-    batteryHint: 'Hatırmaların uygulama kapalıyken de gelmesi için Noor’u pil iyileştirmesinden hariç tutun',
+    batteryHint: 'Hatırmaların uygulama kapalıyken de gelmesi için Hidayah’u pil iyileştirmesinden hariç tutun',
     batteryOemHint: 'Güçlü pil yönetimine sahip cihazlarda sistem ayarlarından Otomatik başlat’ı da etkinleştirin',
     testDelayed: '10 saniye sonra test',
     testDelayedHint: 'Uygulamayı arka plana alın — 10 saniye içinde bildirim gelmeli',
@@ -422,7 +422,7 @@ const tr: Translation = {
     privacy: 'Gizlilik politikası',
     terms: 'Kullanım koşulları',
     licenses: 'Açık kaynak lisansları',
-    about: 'Noor hakkında',
+    about: 'Hidayah hakkında',
     lastUpdated: 'Son güncelleme',
     contactPlaceholder: 'developer@example.com',
   },
@@ -485,14 +485,14 @@ const tr: Translation = {
 
   feedback: {
     title: 'Geri Bildirim Gönder',
-    subtitle: 'Noor\'u geliştirmemize yardımcı olun. Geri bildiriminiz doğrudan geliştiriciye gönderilir.',
+    subtitle: 'Hidayah\'u geliştirmemize yardımcı olun. Geri bildiriminiz doğrudan geliştiriciye gönderilir.',
     subject: 'Konu',
     subjectPlaceholder: 'Bu ne hakkında?',
     message: 'Mesaj',
     messagePlaceholder: 'Düşüncelerinizi bize bildirin, bir hata raporlayın veya özellik önerin…',
     send: 'Geri bildirim gönder',
     messageRequired: 'Lütfen bir mesaj girin',
-    defaultSubject: 'Noor Uygulama Geri Bildirimi',
+    defaultSubject: 'Hidayah Uygulama Geri Bildirimi',
     thanks: 'Teşekkürler!',
     thanksMessage: 'Geri bildiriminiz hazırlandı. E-posta uygulamanız açılarak gönderilecek.',
     error: 'E-posta açılamadı',

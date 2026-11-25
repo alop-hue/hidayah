@@ -1,7 +1,7 @@
 import type { Translation } from './en';
 
 const de: Translation = {
-  appName: 'Noor',
+  appName: 'هداية',
   appTagline: 'Quran · Gebet · Dhikr',
 
   tabs: { home: 'Start', quran: 'Quran', hadith: 'Hadith', tools: 'Werkzeuge', more: 'Mehr', qibla: 'Qibla', dhikr: 'Dhikr', settings: 'Einstellungen' },
@@ -412,7 +412,7 @@ const de: Translation = {
     dndHint: 'Exakte Wecker klingeln auch im DND',
     perPrayerSubtitle: 'Wähle Gebete für Benachrichtigungen',
     battery: 'Ausführung im Hintergrund',
-    batteryHint: 'Noor von der Akku-Optimierung ausnehmen, damit Erinnerungen auch mit geschlossener App ankommen',
+    batteryHint: 'Hidayah von der Akku-Optimierung ausnehmen, damit Erinnerungen auch mit geschlossener App ankommen',
     batteryOemHint: 'Bei Geräten mit aggressivem Akku-Management zusätzlich Autostart in den Systemeinstellungen aktivieren',
     testDelayed: 'Test in 10 Sekunden',
     testDelayedHint: 'App in den Hintergrund legen — in 10 Sekunden sollte eine Benachrichtigung ankommen',
@@ -422,7 +422,7 @@ const de: Translation = {
     privacy: 'Datenschutzerklärung',
     terms: 'Nutzungsbedingungen',
     licenses: 'Open-Source-Lizenzen',
-    about: 'Über Noor',
+    about: 'Über Hidayah',
     lastUpdated: 'Zuletzt aktualisiert',
     contactPlaceholder: 'developer@example.com',
   },
@@ -485,14 +485,14 @@ const de: Translation = {
 
   feedback: {
     title: 'Feedback senden',
-    subtitle: 'Hilf uns, Noor zu verbessern. Dein Feedback wird direkt an den Entwickler gesendet.',
+    subtitle: 'Hilf uns, Hidayah zu verbessern. Dein Feedback wird direkt an den Entwickler gesendet.',
     subject: 'Betreff',
     subjectPlaceholder: 'Worum geht es?',
     message: 'Nachricht',
     messagePlaceholder: 'Sag uns deine Meinung, melde einen Fehler oder schlage eine Funktion vor…',
     send: 'Feedback senden',
     messageRequired: 'Bitte gib eine Nachricht ein',
-    defaultSubject: 'Noor App Feedback',
+    defaultSubject: 'Hidayah App Feedback',
     thanks: 'Danke!',
     thanksMessage: 'Dein Feedback wurde vorbereitet. Deine E-Mail-App wird geöffnet, um es zu senden.',
     error: 'E-Mail konnte nicht geöffnet werden',

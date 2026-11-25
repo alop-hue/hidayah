@@ -1,5 +1,5 @@
 const en = {
-  appName: 'Noor',
+  appName: 'هداية',
   appTagline: 'Quran · Prayer · Dhikr',
 
   tabs: { home: 'Home', quran: 'Quran', hadith: 'Hadith', tools: 'Tools', more: 'More', qibla: 'Qibla', dhikr: 'Dhikr', settings: 'Settings' },
@@ -410,7 +410,7 @@ const en = {
     dndHint: 'Alarms ring in DND when exact alarms are allowed',
     perPrayerSubtitle: 'Choose which prayers notify you',
     battery: 'Background delivery',
-    batteryHint: 'Exclude Noor from battery optimization so reminders arrive when the app is closed',
+    batteryHint: 'Exclude Hidayah from battery optimization so reminders arrive when the app is closed',
     batteryOemHint: 'On phones with aggressive battery management also enable Autostart in system settings',
     testDelayed: 'Test after 10 seconds',
     testDelayedHint: 'Background the app first — a notification should arrive in 10 seconds',
@@ -420,7 +420,7 @@ const en = {
     privacy: 'Privacy policy',
     terms: 'Terms of service',
     licenses: 'Open source licenses',
-    about: 'About Noor',
+    about: 'About Hidayah',
     lastUpdated: 'Last updated',
     contactPlaceholder: 'developer@example.com',
   },
@@ -483,14 +483,14 @@ const en = {
 
   feedback: {
     title: 'Send Feedback',
-    subtitle: 'Help us improve Noor. Your feedback is sent directly to the developer.',
+    subtitle: 'Help us improve Hidayah. Your feedback is sent directly to the developer.',
     subject: 'Subject',
     subjectPlaceholder: 'What is this about?',
     message: 'Message',
     messagePlaceholder: 'Tell us what you think, report a bug, or suggest a feature…',
     send: 'Send feedback',
     messageRequired: 'Please enter a message',
-    defaultSubject: 'Noor App Feedback',
+    defaultSubject: 'Hidayah App Feedback',
     thanks: 'Thank you!',
     thanksMessage: 'Your feedback has been prepared. Your email app will open to send it.',
     error: 'Could not open email',

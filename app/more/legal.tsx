@@ -46,17 +46,17 @@ export default function LegalScreen() {
     about: {
       title: t('legal.about'),
       body:
-        'Noor is an offline-first Quran, prayer, hadith and dhikr companion. All scripture text, translations, tafsir and hadith are bundled with the app and never leave your device. Audio recitations stream or download on demand from public reciter archives.\n\nThis app is non-profit, ad-free, and does not sell or share data.',
+        'Hidayah is an offline-first Quran, prayer, hadith and dhikr companion. All scripture text, translations, tafsir and hadith are bundled with the app and never leave your device. Audio recitations stream or download on demand from public reciter archives.\n\nThis app is non-profit, ad-free, and does not sell or share data.',
     },
     privacy: {
       title: t('legal.privacy'),
       body:
-        '1. Local data only\nBookmarks, notes, settings and downloads are stored exclusively on this device.\n\n2. No analytics\nNoor contains no tracking, analytics SDKs or fingerprinting.\n\n3. Notifications are local\nPrayer reminders are computed and scheduled on-device. No notification service or push server is involved.\n\n4. Permissions are opt-in\nLocation, notifications and exact alarms are requested only when you enable the features that need them.\n\n5. Network use\nStreaming audio and Quran data updates contact public services. Your IP address is visible to those services as with any web request.\n\n6. Your rights\nExport your data at any time (More > About > Export) or delete all local data (More > About > Clear all local data).',
+        '1. Local data only\nBookmarks, notes, settings and downloads are stored exclusively on this device.\n\n2. No analytics\nHidayah contains no tracking, analytics SDKs or fingerprinting.\n\n3. Notifications are local\nPrayer reminders are computed and scheduled on-device. No notification service or push server is involved.\n\n4. Permissions are opt-in\nLocation, notifications and exact alarms are requested only when you enable the features that need them.\n\n5. Network use\nStreaming audio and Quran data updates contact public services. Your IP address is visible to those services as with any web request.\n\n6. Your rights\nExport your data at any time (More > About > Export) or delete all local data (More > About > Clear all local data).',
     },
     terms: {
       title: t('legal.terms'),
       body:
-        '1. Use\nNoor is provided free for personal, non-commercial use.\n\n2. Scripture content\nQuran text, translations and tafsir are provided as-is from the referenced public sources. We work hard to keep them accurate but cannot guarantee the absence of transcription errors.\n\n3. Prayer times\nPrayer times are calculated with standard astronomical methods. Always verify with your local mosque or authority, especially in polar regions.\n\n4. Liability\nThis app is provided "as is" without warranties of any kind. The developer is not liable for missed prayers, alarms, or any damages arising from use of the app.',
+        '1. Use\nHidayah is provided free for personal, non-commercial use.\n\n2. Scripture content\nQuran text, translations and tafsir are provided as-is from the referenced public sources. We work hard to keep them accurate but cannot guarantee the absence of transcription errors.\n\n3. Prayer times\nPrayer times are calculated with standard astronomical methods. Always verify with your local mosque or authority, especially in polar regions.\n\n4. Liability\nThis app is provided "as is" without warranties of any kind. The developer is not liable for missed prayers, alarms, or any damages arising from use of the app.',
     },
     licenses: {
       title: t('legal.licenses'),

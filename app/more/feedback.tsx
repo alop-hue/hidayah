@@ -29,7 +29,7 @@ export default function FeedbackScreen() {
     setSending(true);
     try {
       const body = encodeURIComponent(
-        `${message.trim()}\n\n---\nApp: Noor v1.0.0\nLang: ${t('appName')}\nDevice: ${new Date().toLocaleDateString()}`
+        `${message.trim()}\n\n---\nApp: Hidayah v1.0.0\nLang: ${t('appName')}\nDevice: ${new Date().toLocaleDateString()}`
       );
       const sub = encodeURIComponent(subject.trim() || t('feedback.defaultSubject'));
       await Linking.openURL(`mailto:${FEEDBACK_EMAIL}?subject=${sub}&body=${body}`);
