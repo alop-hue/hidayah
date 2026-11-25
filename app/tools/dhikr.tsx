@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 import { LoadingState, Text } from '@/components/ui';
 import { getAdhkarByCategory, getAdhkarCategories, type AdhkarRow } from '@/db/queries';
+import { bumpActivity } from '@/db/userdb';
 import { toArabicDigits } from '@/lib/digits';
 import { useTheme } from '@/theme/ThemeContext';
 import { space } from '@/theme/tokens';
@@ -79,6 +80,7 @@ export default function DhikrScreen({ inTab = false }: { inTab?: boolean } = {})
   };
 
   const bump = (id: number, count: number) => {
+    if ((counts[id] ?? 0) < count) void bumpActivity({ dhikr: 1 }).catch(() => {});
     setCounts((c) => {
       const cur = c[id] ?? 0;
       if (cur >= count) return c;

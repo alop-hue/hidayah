@@ -116,6 +116,7 @@ function AppShell() {
         <Stack.Screen name="more/downloads" />
         <Stack.Screen name="more/bookmarks" />
         <Stack.Screen name="more/memorize" />
+        <Stack.Screen name="more/progress" />
         <Stack.Screen name="more/diagnostics" />
         <Stack.Screen name="more/feedback" />
         <Stack.Screen name="more/legal" options={{ presentation: 'modal' }} />

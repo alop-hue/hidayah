@@ -56,6 +56,8 @@ interface Props {
   onNextSurah?: () => void;
   activeWord?: number | null;
   activeWordAyah?: number | null;
+  fontSize?: number;
+  lineHeight?: number;
 }
 
 const FONT_SIZE = 27;
@@ -148,8 +150,14 @@ export function MushafReader({
   onNextSurah,
   activeWord,
   activeWordAyah,
+  fontSize,
+  lineHeight,
 }: Props) {
   const { colors } = useTheme();
+  const fontStyle = useMemo(
+    () => ({ fontSize: fontSize ?? FONT_SIZE, lineHeight: lineHeight ?? LINE_HEIGHT }),
+    [fontSize, lineHeight],
+  );
   // The page now uses the same palette as the rest of the app: neutral sheet,
   // ink text, sage/gold accents. No separate green parchment theme.
   const paper = useMemo<Paper>(
@@ -270,6 +278,7 @@ export function MushafReader({
     );
     const base = [
       styles.ayahSpan,
+      fontStyle,
       {
         backgroundColor: bg,
         color: paper.text,
@@ -377,7 +386,7 @@ export function MushafReader({
       out.push(
         <RNText
           key={`para${pIndex++}`}
-          style={[styles.paragraph, { color: paper.text, fontFamily: 'Amiri_400Regular' }]}
+          style={[styles.paragraph, fontStyle, { color: paper.text, fontFamily: 'Amiri_400Regular' }]}
         >
           {paragraph}
         </RNText>,

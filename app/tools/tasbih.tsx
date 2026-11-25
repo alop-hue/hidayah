@@ -10,6 +10,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 import { Button, Text } from '@/components/ui';
 import { ResizableSheet } from '@/components/ui/Sheet';
+import { bumpActivity } from '@/db/userdb';
 import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
 import { radius, space } from '@/theme/tokens';
@@ -34,6 +35,7 @@ export default function TasbihScreen() {
     if (debounce.current) return;
     debounce.current = true;
     setTimeout(() => (debounce.current = false), 110);
+    void bumpActivity({ tasbih: 1 }).catch(() => {});
     setCount((c) => {
       const next = c + 1;
       if (next === tasbihTarget) {

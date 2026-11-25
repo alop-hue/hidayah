@@ -38,6 +38,8 @@ import { getWbwWord, preloadWbw } from '@/features/quran/wbw';
 import { arabicSurahName, surahDisplayName } from '@/features/quran/surahNames';
 import { playAyah, playSurah, playWord, RECITERS, startMemorizeRange, stopMemorize, subscribeToPlayer, togglePlayPause, type PlayerStatus } from '@/services/audio';
 import { useSettings } from '@/store/settings';
+import { bumpActivity } from '@/db/userdb';
+import { PRESET_ORDER, READING_PRESETS, type ReadingPreset } from '@/features/quran/presets';
 import { useTheme } from '@/theme/ThemeContext';
 import { radius, space } from '@/theme/tokens';
 import { Clipboard } from 'react-native';
@@ -61,7 +63,7 @@ export default function ReaderScreen() {
   const surahId = Number(params.surah);
   const targetAyah = params.ayah ? Number(params.ayah) : undefined;
 
-  const { defaultTranslation, showTranslation, tajweed, wordByWord, setShowTranslation, setTajweed, setWordByWord, setDefaultTranslation, setLastRead, audio, setAudio, lastRead } = useSettings();
+  const { defaultTranslation, showTranslation, tajweed, wordByWord, setShowTranslation, setTajweed, setWordByWord, setDefaultTranslation, setLastRead, audio, setAudio, lastRead, readingPreset, setReadingPreset } = useSettings();
 
   const [surah, setSurah] = useState<SurahRow | null>(null);
   const [verses, setVerses] = useState<LoadedVerse[] | null>(null);
@@ -78,6 +80,8 @@ export default function ReaderScreen() {
   // The verse picked for the floating top action bar (independent of the sheet).
   const [pickedAyah, setPickedAyah] = useState<number | null>(null);
   const [barBookmarked, setBarBookmarked] = useState(false);
+  const openedAt = useRef(Date.now());
+  const seenPages = useRef(new Set<number>());
   const [highlights, setHighlights] = useState<Record<number, HighlightColor>>({});
   const [highlightColor, setHighlightColor] = useState<HighlightColor | null>(null);
   const [memorizeMode, setMemorizeMode] = useState(params.memorize === '1');
@@ -144,6 +148,14 @@ export default function ReaderScreen() {
       scrollToAyah(player.memorize.currentAyah);
     }
   }, [player.memorize, surahId, focusAyah, scrollToAyah]);
+
+  useEffect(() => {
+    openedAt.current = Date.now();
+    return () => {
+      const ms = Date.now() - openedAt.current;
+      if (ms > 5000) void bumpActivity({ read_ms: ms }).catch(() => {});
+    };
+  }, [surahId]);
 
   const openSheet = useCallback(async (v: LoadedVerse) => {
     setActive(v);
@@ -365,7 +377,7 @@ export default function ReaderScreen() {
             </Text>
             <Text variant="caption" color="secondary">
               {isArabic
-                ? `${t(`quran.${surah.type === 'Meccan' ? 'meccan' : 'medinan'}`)} · ${surah.ayahs} ${t('quran.verses', { n: '' }).trim()}`
+                ? `${t(`quran.${surah.type === 'Meccan' ? 'meccan' : 'medinan'}`)} · ${toArabicDigits(surah.ayahs)} ${t('quran.verses', { n: '' }).trim()}`
                 : `${surah.english_name} · ${t(`quran.${surah.type === 'Meccan' ? 'meccan' : 'medinan'}`)} · ${surah.ayahs}`}
             </Text>
           </View>
@@ -460,6 +472,41 @@ export default function ReaderScreen() {
               <Toggle value={showTranslation} onValueChange={setShowTranslation} />
             </View>
           )}
+          <Text variant="caption" font="uiBold" color="tertiary" style={styles.sheetSection}>
+            {t('quran.typography')}
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space[2], paddingBottom: space[2] }}>
+            {PRESET_ORDER.map((key: ReadingPreset) => {
+              const selected = readingPreset === key;
+              return (
+                <Pressable
+                  key={key}
+                  onPress={() => {
+                    setReadingPreset(key);
+                    void Haptics.selectionAsync().catch(() => {});
+                  }}
+                  style={[
+                    styles.presetChip,
+                    {
+                      borderColor: selected ? colors.primary : colors.hairline,
+                      backgroundColor: selected ? colors.primarySoft : colors.card,
+                    },
+                  ]}
+                >
+                  <Text
+                    variant="bodySmall"
+                    font="arabicBold"
+                    style={{ color: selected ? colors.primary : colors.text, fontSize: 17 }}
+                  >
+                    {t(`quran.preset_${key}`)}
+                  </Text>
+                  <Text variant="micro" color="tertiary" style={{ marginTop: 2 }} numberOfLines={1}>
+                    {`${READING_PRESETS[key].size} / ${READING_PRESETS[key].line}`}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
           <View style={[styles.settingRow, { borderBottomColor: colors.hairline }]}>
             <Text variant="bodySmall" color="secondary">{t('quran.tajweed')}</Text>
             <Toggle value={tajweed} onValueChange={setTajweed} />
@@ -554,7 +601,18 @@ export default function ReaderScreen() {
         }}
         hiddenAyahs={hidden}
         onToggleHidden={(ayah) => toggleHiddenState(ayah)}
-        onPageChange={(ayah) => setLastRead(surahId, ayah)}
+        onPageChange={(ayah) => {
+          setLastRead(surahId, ayah);
+          const v = verses?.find((x) => x.ayah.ayah === ayah);
+          const page = v?.ayah.page ?? 0;
+          if (page && !seenPages.current.has(page)) {
+            seenPages.current.add(page);
+            const onPage = verses?.filter((x) => x.ayah.page === page).length ?? 0;
+            void bumpActivity({ pages: 1, verses: onPage }).catch(() => {});
+          }
+        }}
+        fontSize={READING_PRESETS[readingPreset].size}
+        lineHeight={READING_PRESETS[readingPreset].line}
         onNextSurah={() => surahId < 114 && router.replace(`/quran/${surahId + 1}`)}
       />
 
@@ -901,6 +959,14 @@ const styles = StyleSheet.create({
   pronBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', padding: space[5] },
   pronCard: { borderRadius: radius.md, borderWidth: 1, paddingHorizontal: space[5], paddingVertical: space[4], alignItems: 'center', gap: space[2], maxWidth: '90%' },
   header: { borderBottomWidth: StyleSheet.hairlineWidth * 2 },
+  presetChip: {
+    minWidth: 96,
+    paddingHorizontal: space[3],
+    paddingVertical: space[2],
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    alignItems: 'center',
+  },
   actionBar: {
     flexDirection: 'row',
     alignItems: 'center',

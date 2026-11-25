@@ -37,6 +37,16 @@ async function getDb(): Promise<SQLiteDatabase> {
       updated_at INTEGER NOT NULL,
       UNIQUE(surah, ayah)
     );
+    CREATE TABLE IF NOT EXISTS activity(
+      day TEXT PRIMARY KEY,
+      pages INTEGER NOT NULL DEFAULT 0,
+      verses INTEGER NOT NULL DEFAULT 0,
+      read_ms INTEGER NOT NULL DEFAULT 0,
+      dhikr INTEGER NOT NULL DEFAULT 0,
+      tasbih INTEGER NOT NULL DEFAULT 0,
+      memorize INTEGER NOT NULL DEFAULT 0,
+      updated_at INTEGER NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS memorized(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       surah INTEGER NOT NULL,
@@ -46,6 +56,75 @@ async function getDb(): Promise<SQLiteDatabase> {
     );
   `);
   return db;
+}
+
+export interface ActivityDay {
+  day: string;
+  pages: number;
+  verses: number;
+  read_ms: number;
+  dhikr: number;
+  tasbih: number;
+  memorize: number;
+}
+
+export function localDayKey(d = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Merge an increment into today's private activity row (no-op when everything is 0). */
+export async function bumpActivity(patch: Partial<Omit<ActivityDay, 'day'>>): Promise<void> {
+  const d = await getDb();
+  const day = localDayKey();
+  await d.runAsync(
+    `INSERT INTO activity (day, pages, verses, read_ms, dhikr, tasbih, memorize, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(day) DO UPDATE SET
+       pages = pages + excluded.pages,
+       verses = verses + excluded.verses,
+       read_ms = read_ms + excluded.read_ms,
+       dhikr = dhikr + excluded.dhikr,
+       tasbih = tasbih + excluded.tasbih,
+       memorize = memorize + excluded.memorize,
+       updated_at = excluded.updated_at`,
+    day,
+    patch.pages ?? 0,
+    patch.verses ?? 0,
+    patch.read_ms ?? 0,
+    patch.dhikr ?? 0,
+    patch.tasbih ?? 0,
+    patch.memorize ?? 0,
+    Date.now(),
+  );
+}
+
+/** Rows for the last `days` days (oldest first), including empty days. */
+export async function getActivity(days = 7): Promise<ActivityDay[]> {
+  const d = await getDb();
+  const rows = await d.getAllAsync<{
+    day: string; pages: number; verses: number; read_ms: number; dhikr: number; tasbih: number; memorize: number;
+  }>('SELECT day, pages, verses, read_ms, dhikr, tasbih, memorize FROM activity ORDER BY day DESC LIMIT ?', days);
+  const byDay = new Map(rows.map((r) => [r.day, r]));
+  const out: ActivityDay[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const dt = new Date();
+    dt.setDate(dt.getDate() - i);
+    const key = localDayKey(dt);
+    const row = byDay.get(key);
+    out.push({
+      day: key,
+      pages: row?.pages ?? 0,
+      verses: row?.verses ?? 0,
+      read_ms: row?.read_ms ?? 0,
+      dhikr: row?.dhikr ?? 0,
+      tasbih: row?.tasbih ?? 0,
+      memorize: row?.memorize ?? 0,
+    });
+  }
+  return out;
 }
 
 export interface AyahBookmark {

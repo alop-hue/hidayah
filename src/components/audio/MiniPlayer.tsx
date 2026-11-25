@@ -1,23 +1,49 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import Svg, { Circle } from 'react-native-svg';
 
 import { Text } from '@/components/ui';
 import { ResizableSheet } from '@/components/ui/Sheet';
 import { getSurah } from '@/db/queries';
-import { setRate, setSleepTimer, subscribeToPlayer, togglePlayPause, type PlayerStatus } from '@/services/audio';
+import { arabicSurahName } from '@/features/quran/surahNames';
+import { toArabicDigits } from '@/lib/digits';
+import { RECITERS, seekTo, setRate, setSleepTimer, subscribeToPlayer, togglePlayPause, type PlayerStatus } from '@/services/audio';
 import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
 import { radius, space } from '@/theme/tokens';
 
+const EMPTY: PlayerStatus = {
+  playing: false,
+  isLoaded: false,
+  currentTime: 0,
+  duration: 0,
+  didJustFinish: false,
+  surah: null,
+  memorize: null,
+  startAyah: null,
+};
+
+function clock(seconds: number, rtl: boolean): string {
+  const s = Math.max(0, Math.floor(seconds));
+  const m = Math.floor(s / 60);
+  const rest = String(s % 60).padStart(2, '0');
+  const text = `${m}:${rest}`;
+  return rtl ? toArabicDigits(text) : text;
+}
+
 export function MiniPlayer() {
   const { t, i18n } = useTranslation();
-  const { colors } = useTheme();  const { audio, setAudio } = useSettings();
-  const [status, setStatus] = useState<PlayerStatus>({ playing: false, isLoaded: false, currentTime: 0, duration: 0, didJustFinish: false, surah: null, memorize: null, startAyah: null });
+  const { colors } = useTheme();
+  const router = useRouter();
+  const { audio, setAudio } = useSettings();
+  const [status, setStatus] = useState<PlayerStatus>(EMPTY);
   const [surahName, setSurahName] = useState('');
   const [open, setOpen] = useState(false);
   const [sleepMins, setSleepMins] = useState<number | null>(null);
+  const rtl = i18n.language.startsWith('ar');
 
   useEffect(() => subscribeToPlayer(setStatus), []);
   useEffect(() => {
@@ -29,34 +55,99 @@ export function MiniPlayer() {
   if (!status.isLoaded || !status.surah) return null;
 
   const progress = status.duration > 0 ? Math.min(1, status.currentTime / status.duration) : 0;
+  const remaining = Math.max(0, status.duration - status.currentTime);
+  const reciter = RECITERS.find((r) => r.id === audio.reciterId);
+  const reciterName = (rtl ? reciter?.ar : reciter?.name) ?? reciter?.name ?? '';
+
+  const RING = 232;
+  const stroke = 3;
+  const r = (RING - stroke) / 2;
+  const circumference = 2 * Math.PI * r;
 
   return (
     <>
-      <Pressable onPress={() => setOpen(true)} style={[styles.bar, { backgroundColor: colors.card, borderColor: colors.glassBorder }]}>
+      <Pressable
+        onPress={() => setOpen(true)}
+        accessibilityRole="button"
+        accessibilityLabel={t('audio.nowPlaying')}
+        style={[styles.bar, { backgroundColor: colors.card, borderColor: colors.glassBorder }]}
+      >
         <View style={[styles.progress, { backgroundColor: colors.primary, width: `${progress * 100}%` }]} />
         <View style={styles.row}>
-          <Ionicons name="musical-notes" size={18} color={colors.primary} />
-          <Text variant="bodySmall" font="uiBold" numberOfLines={1} style={{ flex: 1, marginLeft: space[2] }}>
-            {surahName}
-          </Text>
-          <Pressable onPress={togglePlayPause} hitSlop={8}>
-            <Ionicons name={status.playing ? 'pause' : 'play'} size={22} color={colors.text} />
+          <View style={[styles.dot, { backgroundColor: colors.primarySoft }]}>
+            <Ionicons name="musical-notes" size={15} color={colors.primary} />
+          </View>
+          <View style={{ flex: 1, marginHorizontal: space[3] }}>
+            <Text variant="bodySmall" font="uiBold" numberOfLines={1}>
+              {surahName}
+            </Text>
+            <Text variant="micro" color="tertiary" numberOfLines={1}>
+              {reciterName}
+            </Text>
+          </View>
+          <Pressable onPress={togglePlayPause} hitSlop={10} style={[styles.smallPlay, { backgroundColor: colors.primary }]}>
+            <Ionicons name={status.playing ? 'pause' : 'play'} size={17} color={colors.textOnEmphasis} />
           </Pressable>
         </View>
       </Pressable>
 
       <ResizableSheet visible={open} onClose={() => setOpen(false)}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: space[5], paddingBottom: space[7] }}>
-        <Text variant="subheading" font="uiBold" style={{ textAlign: 'center' }}>
-          {surahName}
-        </Text>
-        <Text variant="caption" color="secondary" style={{ textAlign: 'center', marginTop: 2 }}>
-          {t('audio.nowPlaying')}
-        </Text>
+          <Text variant="caption" font="uiBold" color="tertiary" style={{ textAlign: 'center', letterSpacing: 1.4 }}>
+            {t('audio.nowPlaying')}
+          </Text>
 
-        <View style={styles.controls}>
-          <ControlBtn icon={status.playing ? 'pause' : 'play'} onPress={togglePlayPause} big />
-        </View>
+          {/* artwork = progress ring around the surah name */}
+          <View style={styles.artWrap}>
+            <Svg width={RING} height={RING}>
+              <Circle cx={RING / 2} cy={RING / 2} r={r} stroke={colors.hairline} strokeWidth={stroke} fill="none" />
+              <Circle
+                cx={RING / 2}
+                cy={RING / 2}
+                r={r}
+                stroke={colors.accent}
+                strokeWidth={stroke}
+                strokeLinecap="round"
+                fill="none"
+                strokeDasharray={`${circumference}`}
+                strokeDashoffset={circumference * (1 - progress)}
+                transform={`rotate(-90 ${RING / 2} ${RING / 2})`}
+              />
+            </Svg>
+            <View style={styles.artCenter}>
+              <Text variant="title" font="arabicBold" numberOfLines={1} style={{ fontSize: 26, textAlign: 'center' }}>
+                {arabicSurahName(status.surah) || surahName}
+              </Text>
+              <Text variant="caption" color="secondary" numberOfLines={1} style={{ marginTop: 4 }}>
+                {surahName} · {reciterName}
+              </Text>
+            </View>
+          </View>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: space[2] }}>
+            <Text variant="micro" color="secondary">{clock(status.currentTime, rtl)}</Text>
+            <Text variant="micro" color="tertiary">{t('audio.remaining', { time: clock(remaining, rtl) })}</Text>
+          </View>
+
+          <View style={styles.controls}>
+            <Pressable
+              onPress={() => void seekTo(Math.max(0, status.currentTime - 10))}
+              style={[styles.ctrl, { backgroundColor: colors.card, borderColor: colors.hairline }]}
+              accessibilityLabel={t('audio.back10')}
+            >
+              <Ionicons name="play-back" size={20} color={colors.text} />
+            </Pressable>
+            <Pressable onPress={togglePlayPause} style={[styles.ctrl, styles.ctrlBig, { backgroundColor: colors.primary }]}>
+              <Ionicons name={status.playing ? 'pause' : 'play'} size={30} color={colors.textOnEmphasis} />
+            </Pressable>
+            <Pressable
+              onPress={() => void seekTo(Math.min(status.duration, status.currentTime + 10))}
+              style={[styles.ctrl, { backgroundColor: colors.card, borderColor: colors.hairline }]}
+              accessibilityLabel={t('audio.forward10')}
+            >
+              <Ionicons name="play-forward" size={20} color={colors.text} />
+            </Pressable>
+          </View>
 
           <View style={styles.section}>
             <Text variant="caption" font="uiBold" color="tertiary" style={styles.label}>{t('audio.speed')}</Text>
@@ -95,32 +186,35 @@ export function MiniPlayer() {
           <View style={styles.section}>
             <Text variant="caption" font="uiBold" color="tertiary" style={styles.label}>{t('audio.repeatRange')}</Text>
             <View style={styles.chips}>
-              {(['off', 'surah', 'verse'] as const).map((r) => (
+              {(['off', 'surah', 'verse'] as const).map((rep) => (
                 <Chip
-                  key={r}
-                  label={t(`audio.repeat${r === 'off' ? 'Off' : r === 'surah' ? 'Surah' : 'Verse'}`)}
-                  active={audio.repeat === r}
-                  onPress={() => setAudio({ repeat: r })}
+                  key={rep}
+                  label={t(`audio.repeat${rep === 'off' ? 'Off' : rep === 'surah' ? 'Surah' : 'Verse'}`)}
+                  active={audio.repeat === rep}
+                  onPress={() => setAudio({ repeat: rep })}
                 />
               ))}
             </View>
           </View>
 
-          <Pressable onPress={() => setOpen(false)} style={{ alignSelf: 'center', marginTop: space[4], padding: space[2] }}>
-            <Text variant="bodySmall" font="uiBold" color="primary">{t('common.close')}</Text>
+          <Pressable
+            onPress={() => {
+              const target = status.surah;
+              setOpen(false);
+              if (target) router.push({ pathname: '/quran/[surah]', params: { surah: String(target) } });
+            }}
+            style={({ pressed }) => [
+              styles.openBtn,
+              { borderColor: colors.hairline, backgroundColor: colors.card },
+              pressed && { opacity: 0.7 },
+            ]}
+          >
+            <Ionicons name="book-outline" size={16} color={colors.primary} />
+            <Text variant="bodySmall" font="uiBold" color="primary">{t('audio.openSurah')}</Text>
           </Pressable>
         </ScrollView>
       </ResizableSheet>
     </>
-  );
-}
-
-function ControlBtn({ icon, onPress, big }: { icon: 'play' | 'pause'; onPress: () => void; big?: boolean }) {
-  const { colors } = useTheme();
-  return (
-    <Pressable onPress={onPress} style={[styles.ctrl, { backgroundColor: colors.primary }, big && { width: 64, height: 64, borderRadius: 32 }]}>
-      <Ionicons name={icon} size={big ? 28 : 20} color={colors.textOnEmphasis} />
-    </Pressable>
   );
 }
 
@@ -150,11 +244,33 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   progress: { position: 'absolute', bottom: 0, left: 0, height: 2 },
-  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space[4], paddingVertical: space[3] },
-  controls: { flexDirection: 'row', justifyContent: 'center', marginTop: space[5] },
-  ctrl: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space[3], paddingVertical: space[3] },
+  dot: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  smallPlay: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  artWrap: { alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginTop: space[4] },
+  artCenter: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space[8] },
+  controls: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: space[6], marginTop: space[4] },
+  ctrl: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ctrlBig: { width: 74, height: 74, borderRadius: 37, borderWidth: 0 },
   section: { marginTop: space[5] },
   label: { textTransform: 'uppercase', letterSpacing: 1, marginBottom: space[2] },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
   chip: { paddingHorizontal: space[3], paddingVertical: space[2], borderRadius: radius.pill, borderWidth: 1 },
+  openBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: space[6],
+    paddingVertical: space[3],
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+  },
 });

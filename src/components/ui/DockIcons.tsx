@@ -60,12 +60,13 @@ export function DockIcon({ name, color, size = 22, active }: Props) {
 
       {name === 'settings' ? (
         <>
-          <Circle cx="12" cy="12" r="3.2" {...common} />
-          <Path
-            d="M19.1 14.6c.1.3.2.6.2.9l1.1 1.5-1.6 2.7-1.8-.6c-.5.4-1 .6-1.6.8l-.3 1.9h-3.2l-.3-1.9c-.6-.2-1.1-.4-1.6-.8l-1.8.6-1.6-2.7 1.1-1.5c0-.3.1-.6.2-.9l-1.2-1.5 1.6-2.7 1.8.6c.5-.4 1-.6 1.6-.8l.3-1.9h3.2l.3 1.9c.6.2 1.1.4 1.6.8l1.8-.6 1.6 2.7-1.2 1.5z"
-            {...common}
-            strokeWidth={1.5}
-          />
+          <Path d="M4 7h5" {...common} strokeWidth={1.7} />
+          <Path d="M15 7h5" {...common} strokeWidth={1.7} />
+          <Path d="M4 17h9" {...common} strokeWidth={1.7} />
+          <Path d="M19 17h1" {...common} strokeWidth={1.7} />
+          <Path d="M12 17h1.5" {...common} strokeWidth={1.7} />
+          <Circle cx="11.5" cy="7" r="2.1" {...common} strokeWidth={1.7} />
+          <Circle cx="16.4" cy="17" r="2.1" {...common} strokeWidth={1.7} />
         </>
       ) : null}
     </Svg>

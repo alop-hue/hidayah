@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Clipboard, FlatList, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
+import * as Haptics from 'expo-haptics';
 import { Text } from '@/components/ui';
 import { ResizableSheet } from '@/components/ui/Sheet';
 import names from '@/assets/data/asmaul-husna.json';
@@ -30,6 +31,28 @@ export default function Names99Screen() {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [detail, setDetail] = useState<NameEntry | null>(null);
+  const isArabic = i18n.language.startsWith('ar');
+  const [quiz, setQuiz] = useState(false);
+  const [score, setScore] = useState({ right: 0, wrong: 0 });
+  const [quizIndex, setQuizIndex] = useState(() => Math.floor(Math.random() * 99));
+  const [picked, setPicked] = useState<string | null>(null);
+
+  const meaningOf = useCallback((n: NameEntry) => (isArabic ? n.arMeaning : n.en), [isArabic]);
+
+  const quizOptions = useMemo(() => {
+    const answer = ALL_NAMES[quizIndex % ALL_NAMES.length];
+    const others = ALL_NAMES.filter((n) => n.n !== answer.n)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3);
+    return [answer, ...others].sort(() => Math.random() - 0.5);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quizIndex]);
+
+  const quizAnswer = ALL_NAMES[quizIndex % ALL_NAMES.length];
+  const nextQuestion = () => {
+    setPicked(null);
+    setQuizIndex((i) => (i + 1 + Math.floor(Math.random() * 98)) % 99);
+  };
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -56,6 +79,17 @@ export default function Names99Screen() {
         <Text variant="title" font="uiBold" style={{ flex: 1 }} numberOfLines={1}>
           {t('tools.names99Title')}
         </Text>
+        <AnimatedPressable
+          onPress={() => {
+            setQuiz((q) => !q);
+            setPicked(null);
+            void Haptics.selectionAsync().catch(() => {});
+          }}
+          accessibilityLabel={quiz ? t('namesQuiz.study') : t('namesQuiz.quiz')}
+          style={[styles.iconBtn, { backgroundColor: quiz ? colors.primarySoft : colors.card }]}
+        >
+          <Ionicons name={quiz ? 'book-outline' : 'help-circle-outline'} size={19} color={colors.primary} />
+        </AnimatedPressable>
       </View>
 
       <View style={[styles.searchBox, { backgroundColor: colors.card }]}>
@@ -72,6 +106,73 @@ export default function Names99Screen() {
         </Text>
       </View>
 
+      {quiz ? (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: space[4], paddingBottom: insets.bottom + space[8] }}>
+          <Text variant="caption" color="tertiary" style={{ textAlign: 'center', marginTop: space[2] }}>
+            {t('namesQuiz.score', { right: score.right, wrong: score.wrong })}
+          </Text>
+          <View style={[styles.quizCard, { backgroundColor: colors.card, borderColor: colors.hairline }]}>
+            <Text variant="micro" color="tertiary" style={{ textAlign: 'center', letterSpacing: 1.5 }}>
+              {t('namesQuiz.prompt')}
+            </Text>
+            <Text variant="display" font="arabicBold" style={{ fontSize: 44, lineHeight: 78, textAlign: 'center', color: colors.accent, marginTop: space[3] }}>
+              {quizAnswer.ar}
+            </Text>
+            <Text variant="caption" color="secondary" style={{ textAlign: 'center' }}>
+              {quizAnswer.tr}
+            </Text>
+          </View>
+
+          <View style={{ gap: space[2], marginTop: space[4] }}>
+            {quizOptions.map((opt) => {
+              const isAnswer = opt.n === quizAnswer.n;
+              const chosen = picked === meaningOf(opt);
+              const show = picked !== null;
+              return (
+                <AnimatedPressable
+                  key={opt.n}
+                  onPress={() => {
+                    if (picked !== null) return;
+                    setPicked(meaningOf(opt));
+                    setScore((sc) => (isAnswer ? { ...sc, right: sc.right + 1 } : { ...sc, wrong: sc.wrong + 1 }));
+                    void Haptics.notificationAsync(
+                      isAnswer ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning,
+                    ).catch(() => {});
+                  }}
+                  style={[
+                    styles.option,
+                    {
+                      borderColor: show && isAnswer ? colors.accent : show && chosen ? '#C0614F' : colors.hairline,
+                      backgroundColor: show && isAnswer ? colors.primarySoft : colors.card,
+                    },
+                  ]}
+                >
+                  <Text variant="bodySmall" style={{ flex: 1, textAlign: isArabic ? 'right' : 'left' }}>
+                    {meaningOf(opt)}
+                  </Text>
+                  {show && isAnswer ? <Ionicons name="checkmark-circle" size={18} color={colors.accent} /> : null}
+                  {show && chosen && !isAnswer ? <Ionicons name="close-circle" size={18} color="#C0614F" /> : null}
+                </AnimatedPressable>
+              );
+            })}
+          </View>
+
+          {picked !== null ? (
+            <AnimatedPressable
+              onPress={nextQuestion}
+              style={[styles.nextBtn, { backgroundColor: colors.primary }]}
+            >
+              <Text variant="body" font="uiBold" style={{ color: colors.textOnEmphasis }}>
+                {t('namesQuiz.next')}
+              </Text>
+            </AnimatedPressable>
+          ) : null}
+
+          <Text variant="micro" color="tertiary" style={{ textAlign: 'center', marginTop: space[4] }}>
+            {t('namesQuiz.hint')}
+          </Text>
+        </ScrollView>
+      ) : (
       <FlatList
         showsVerticalScrollIndicator={false}
         data={list}
@@ -110,6 +211,7 @@ export default function Names99Screen() {
           </Text>
         }
       />
+      )}
 
       <ResizableSheet visible={detail !== null} onClose={() => setDetail(null)}>
         {detail && (
@@ -183,6 +285,18 @@ const styles = StyleSheet.create({
   num: { width: 26, height: 26, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   chevron: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   section: { marginTop: space[4], marginBottom: space[2], textTransform: 'uppercase', letterSpacing: 1 },
+  quizCard: { borderRadius: radius.lg, borderWidth: StyleSheet.hairlineWidth * 2, padding: space[4], marginTop: space[4] },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space[2],
+    paddingHorizontal: space[4],
+    paddingVertical: space[3],
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    minHeight: 52,
+  },
+  nextBtn: { alignItems: 'center', paddingVertical: space[3], borderRadius: radius.md, marginTop: space[4] },
   meaningBox: { borderWidth: StyleSheet.hairlineWidth * 2, borderRadius: radius.md, padding: space[3] },
   copyBtn: {
     flexDirection: 'row',

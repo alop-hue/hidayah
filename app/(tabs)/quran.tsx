@@ -16,6 +16,7 @@ const SEED_SURAHS: SurahRow[] = (bundledSurahs as { id: number; name: string; en
   (s) => ({ id: s.id, name: s.name, english_name: s.englishName, translation: s.translation, type: s.type, ayahs: s.ayahs }),
 );
 import { arabicSurahName, surahDisplayName } from '@/features/quran/surahNames';
+import { toArabicDigits } from '@/lib/digits';
 import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
 import { radius, space } from '@/theme/tokens';
@@ -126,13 +127,13 @@ export default function QuranTab() {
                       </Text>
                       {!rtl && (
                         <Text variant="caption" color="secondary">
-                          {item.translation} · {t('quran.verses', { n: item.ayahs })} · {t(`quran.${item.type === 'Meccan' ? 'meccan' : 'medinan'}`)}
+                          {item.translation} · {t('quran.verses', { n: rtl ? toArabicDigits(item.ayahs) : item.ayahs })} · {t(`quran.${item.type === 'Meccan' ? 'meccan' : 'medinan'}`)}
                           {isLast ? ` · ${t('quran.verseNumber')} ${lastRead!.ayah}` : ''}
                         </Text>
                       )}
                       {rtl && (
                         <Text variant="caption" color="secondary" style={styles.rtlText}>
-                          {t('quran.verses', { n: item.ayahs })} · {t(`quran.${item.type === 'Meccan' ? 'meccan' : 'medinan'}`)}
+                          {t('quran.verses', { n: rtl ? toArabicDigits(item.ayahs) : item.ayahs })} · {t(`quran.${item.type === 'Meccan' ? 'meccan' : 'medinan'}`)}
                           {isLast ? ` · ${t('quran.verseNumber')} ${lastRead!.ayah}` : ''}
                         </Text>
                       )}

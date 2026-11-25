@@ -2,6 +2,8 @@ import AsyncStorage from 'expo-sqlite/kv-store';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import type { ReadingPreset } from '@/features/quran/presets';
+
 export type ThemePreference = 'system' | 'light' | 'dark' | 'amoled';
 export type AppLang = 'en' | 'ar' | 'tr' | 'id' | 'ur' | 'fr' | 'de';
 
@@ -110,6 +112,8 @@ interface SettingsState {
   setLastRead: (surah: number, ayah: number) => void;
   setDailyWird: (w: Partial<DailyWird>) => void;
   setOnBoarded: (v: boolean) => void;
+  readingPreset: ReadingPreset;
+  setReadingPreset: (p: ReadingPreset) => void;
   /** Home dashboard customization: order of tile routes + hidden ones. */
   homeTiles: { order: string[]; hidden: string[] };
   setHomeTiles: (v: { order?: string[]; hidden?: string[] }) => void;
@@ -142,6 +146,7 @@ export const useSettings = create<SettingsState>()(
       lastRead: null,
       dailyWird: { enabled: false, goal: 'pages', target: 4, completed: 0, lastDate: '', totalPages: 0, streak: 0, readSurahs: [], readPages: [], readJuz: [] },
       onBoarded: false,
+      readingPreset: 'comfort' as ReadingPreset,
       homeTiles: { order: [], hidden: [] },
       setTheme: (theme) => set({ theme }),
       setLanguage: (language) =>
@@ -199,6 +204,7 @@ export const useSettings = create<SettingsState>()(
       }),
       setDailyWird: (w) => set((s) => ({ dailyWird: { ...s.dailyWird, ...w } })),
       setOnBoarded: (onBoarded) => set({ onBoarded }),
+      setReadingPreset: (readingPreset) => set({ readingPreset }),
       setHomeTiles: (v) =>
         set((st) => ({
           homeTiles: {

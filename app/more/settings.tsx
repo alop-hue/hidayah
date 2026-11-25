@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ListRow, SectionLabel, Text, Toggle } from '@/components/ui';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { SUPPORTED_LANGS } from '@/i18n';
+import { PRESET_ORDER, READING_PRESETS, type ReadingPreset } from '@/features/quran/presets';
 import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
 import { space } from '@/theme/tokens';
@@ -27,7 +28,7 @@ export default function SettingsScreen({ inTab = false }: { inTab?: boolean } = 
   const { colors } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { theme, setTheme, language, setLanguage, tajweed, setTajweed, wordByWord, setWordByWord, showTranslation, setShowTranslation, defaultTranslation } = useSettings();
+  const { theme, setTheme, language, setLanguage, tajweed, setTajweed, wordByWord, setWordByWord, showTranslation, setShowTranslation, defaultTranslation, readingPreset, setReadingPreset } = useSettings();
 
   void defaultTranslation;
 
@@ -87,6 +88,31 @@ export default function SettingsScreen({ inTab = false }: { inTab?: boolean } = 
         title={t('settings.wordByWord')}
         right={<Toggle value={wordByWord} onValueChange={setWordByWord} />}
       />
+      <Text variant="caption" font="uiBold" color="tertiary" style={{ paddingHorizontal: space[4], marginTop: space[3], marginBottom: space[2] }}>
+        {t('quran.typography')}
+      </Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space[2], paddingHorizontal: space[4] }}>
+        {PRESET_ORDER.map((key: ReadingPreset) => {
+          const selected = readingPreset === key;
+          return (
+            <Pressable
+              key={key}
+              onPress={() => setReadingPreset(key)}
+              style={[
+                styles.langChip,
+                {
+                  borderColor: selected ? colors.primary : colors.hairline,
+                  backgroundColor: selected ? colors.primarySoft : colors.card,
+                },
+              ]}
+            >
+              <Text variant="bodySmall" font="uiBold" color={selected ? 'primary' : 'secondary'}>
+                {t(`quran.preset_${key}`)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
       {language !== null && !language.startsWith('ar') && (
         <ListRow
           icon={<Ionicons name="language-outline" size={20} color={colors.primary} />}
@@ -95,6 +121,57 @@ export default function SettingsScreen({ inTab = false }: { inTab?: boolean } = 
           right={<Toggle value={showTranslation} onValueChange={setShowTranslation} />}
         />
       )}
+
+      <SectionLabel>{t('settings.tools')}</SectionLabel>
+      <ListRow
+        icon={<Ionicons name="pulse-outline" size={20} color={colors.primary} />}
+        title={t('activity.title')}
+        subtitle={t('activity.private')}
+        onPress={() => router.push('/more/progress' as never)}
+        right={<Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />}
+      />
+      <ListRow
+        icon={<Ionicons name="book-outline" size={20} color={colors.primary} />}
+        title={t('quran.title')}
+        onPress={() => router.push('/(tabs)/quran')}
+        right={<Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />}
+      />
+      <ListRow
+        icon={<Ionicons name="headset-outline" size={20} color={colors.primary} />}
+        title={t('audio.title')}
+        onPress={() => router.push('/more/downloads')}
+        right={<Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />}
+      />
+      <ListRow
+        icon={<Ionicons name="notifications-outline" size={20} color={colors.primary} />}
+        title={t('settings.notifications')}
+        onPress={() => router.push('/prayer/notifications')}
+        right={<Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />}
+      />
+      <ListRow
+        icon={<Ionicons name="compass-outline" size={20} color={colors.primary} />}
+        title={t('qibla.title')}
+        onPress={() => router.push('/tools/qibla')}
+        right={<Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />}
+      />
+      <ListRow
+        icon={<Ionicons name="school-outline" size={20} color={colors.primary} />}
+        title={t('memorize.title')}
+        onPress={() => router.push('/more/memorize')}
+        right={<Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />}
+      />
+      <ListRow
+        icon={<Ionicons name="flower-outline" size={20} color={colors.primary} />}
+        title={t('tools.dhikr')}
+        onPress={() => router.push('/tools/dhikr')}
+        right={<Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />}
+      />
+      <ListRow
+        icon={<Ionicons name="information-circle-outline" size={20} color={colors.primary} />}
+        title={t('settings.about')}
+        onPress={() => router.push('/more/legal')}
+        right={<Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />}
+      />
       </ScrollView>
     </View>
   );
