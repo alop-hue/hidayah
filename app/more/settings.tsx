@@ -138,7 +138,7 @@ export default function SettingsScreen({ inTab = false }: { inTab?: boolean } = 
       />
       <ListRow
         icon={<Ionicons name="headset-outline" size={20} color={colors.primary} />}
-        title={t('audio.title')}
+        title={t('tools.audio')}
         onPress={() => router.push('/more/downloads')}
         right={<Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />}
       />
@@ -150,7 +150,7 @@ export default function SettingsScreen({ inTab = false }: { inTab?: boolean } = 
       />
       <ListRow
         icon={<Ionicons name="compass-outline" size={20} color={colors.primary} />}
-        title={t('qibla.title')}
+        title={t('tools.qibla')}
         onPress={() => router.push('/tools/qibla')}
         right={<Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />}
       />
