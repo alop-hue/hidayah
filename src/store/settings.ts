@@ -110,6 +110,9 @@ interface SettingsState {
   setLastRead: (surah: number, ayah: number) => void;
   setDailyWird: (w: Partial<DailyWird>) => void;
   setOnBoarded: (v: boolean) => void;
+  /** Home dashboard customization: order of tile routes + hidden ones. */
+  homeTiles: { order: string[]; hidden: string[] };
+  setHomeTiles: (v: { order?: string[]; hidden?: string[] }) => void;
   reset: () => void;
 }
 
@@ -139,6 +142,7 @@ export const useSettings = create<SettingsState>()(
       lastRead: null,
       dailyWird: { enabled: false, goal: 'pages', target: 4, completed: 0, lastDate: '', totalPages: 0, streak: 0, readSurahs: [], readPages: [], readJuz: [] },
       onBoarded: false,
+      homeTiles: { order: [], hidden: [] },
       setTheme: (theme) => set({ theme }),
       setLanguage: (language) =>
         set((s) => ({
@@ -195,6 +199,13 @@ export const useSettings = create<SettingsState>()(
       }),
       setDailyWird: (w) => set((s) => ({ dailyWird: { ...s.dailyWird, ...w } })),
       setOnBoarded: (onBoarded) => set({ onBoarded }),
+      setHomeTiles: (v) =>
+        set((st) => ({
+          homeTiles: {
+            order: v.order ?? st.homeTiles.order,
+            hidden: v.hidden ?? st.homeTiles.hidden,
+          },
+        })),
       reset: () => set({}),
     }),
     {

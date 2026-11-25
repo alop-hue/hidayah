@@ -34,6 +34,9 @@ const ar: Translation = {
 
   home: {
     explore: 'استكشف',
+    customize: 'تخصيص الرئيسية',
+    customizeHint: 'اختر الأدوات التي تظهر في شاشتك الرئيسية',
+    resetLayout: 'إعادة الترتيب الافتراضي',
     prayerAt: '{{prayer}} في {{time}}',
     hadithHint: '٩ مجموعات',
     memorizeHint: 'تابع حفظك',

@@ -34,6 +34,9 @@ const fr: Translation = {
 
   home: {
     explore: 'Explorer',
+    customize: "Personnaliser l'accueil",
+    customizeHint: "Choisissez les outils affichés sur votre écran d'accueil",
+    resetLayout: 'Réinitialiser la disposition',
     prayerAt: '{{prayer}} à {{time}}',
     hadithHint: '9 recueils',
     memorizeHint: 'Suivez vos progrès',

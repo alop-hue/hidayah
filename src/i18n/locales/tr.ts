@@ -34,6 +34,9 @@ const tr: Translation = {
 
   home: {
     explore: 'Keşfet',
+    customize: 'Panoyu özelleştir',
+    customizeHint: 'Ana ekranınızda görünecek araçları seçin',
+    resetLayout: 'Düzeni sıfırla',
     prayerAt: '{{prayer}} {{time}}',
     hadithHint: '9 koleksiyon',
     memorizeHint: 'İlerlemeni takip et',

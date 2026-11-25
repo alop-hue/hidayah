@@ -7,9 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
-import { Text } from '@/components/ui';
+import { Text, Toggle } from '@/components/ui';
 import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 import { DOCK_SPACE } from '@/components/ui/FloatingDock';
+import { ResizableSheet } from '@/components/ui/Sheet';
 import { getSurah } from '@/db/queries';
 import { toArabicDigits } from '@/lib/digits';
 import { formatTime, getTimesForDate, hijriDate } from '@/services/prayer';
@@ -42,7 +43,8 @@ export default function HomeScreen() {
   const { colors, mode } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { prayer, lastRead, dailyWird } = useSettings();
+  const { prayer, lastRead, dailyWird, homeTiles, setHomeTiles } = useSettings();
+  const [customizeOpen, setCustomizeOpen] = useState(false);
   const setPrayer = useSettings((s) => s.setPrayer);
   const [surahName, setSurahName] = useState<string | null>(null);
   const [locating, setLocating] = useState(false);
@@ -107,7 +109,7 @@ export default function HomeScreen() {
   const nextName = result.next ? t(`prayer.${result.next.name}`) : '';
   const nextTime = result.next ? formatTime(result.next.date) : '';
 
-  const explore = [
+  const explore: { icon: keyof typeof Ionicons.glyphMap; title: string; hint: string; route: string }[] = [
     { icon: 'sparkles', title: t('tools.names99'), hint: t('tools.names99Hint'), route: '/tools/names99' },
     { icon: 'chatbubbles', title: t('hadith.title'), hint: t('home.hadithHint'), route: '/hadith' },
     { icon: 'flower', title: t('tools.dhikr'), hint: t('tools.dhikrHint'), route: '/tools/dhikr' },
@@ -120,7 +122,23 @@ export default function HomeScreen() {
       hint: lastRead && surahName ? `${t('home.surah', { surah: surahName })} · ${arDigits(String(dailyWird.completed))}/${arDigits(String(dailyWird.target))}` : t('home.noProgress'),
       route: '/tools/wird',
     },
-  ] as const;
+  ];
+
+  const tileByRoute = new Map(explore.map((t) => [t.route, t]));
+  const orderedExplore = [
+    ...homeTiles.order.map((r) => tileByRoute.get(r)).filter((t): t is (typeof explore)[number] => !!t),
+    ...explore.filter((t) => !homeTiles.order.includes(t.route)),
+  ];
+  const visibleExplore = orderedExplore.filter((t) => !homeTiles.hidden.includes(t.route));
+
+  const moveTile = (route: string, dir: -1 | 1) => {
+    const routes = orderedExplore.map((t) => t.route);
+    const i = routes.indexOf(route);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= routes.length) return;
+    [routes[i], routes[j]] = [routes[j], routes[i]];
+    setHomeTiles({ order: routes });
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -209,13 +227,25 @@ export default function HomeScreen() {
         </Animated.View>
 
         {/* explore */}
-        <Animated.Text entering={FadeInDown.duration(420).delay(210)} style={{ marginTop: space[7], marginBottom: space[3] }}>
+        <Animated.View
+          entering={FadeInDown.duration(420).delay(210)}
+          style={[styles.exploreHead, { marginTop: space[7], marginBottom: space[3] }]}
+        >
           <Text variant="subheading" font="uiBold">
             {t('home.explore')}
           </Text>
-        </Animated.Text>
+          <Pressable
+            onPress={() => setCustomizeOpen(true)}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={t('home.customize')}
+            style={({ pressed }) => [styles.tuneBtn, { borderColor: colors.hairline }, pressed && { opacity: 0.6 }]}
+          >
+            <Ionicons name="options-outline" size={14} color={colors.textSecondary} />
+          </Pressable>
+        </Animated.View>
         <View style={styles.grid}>
-          {explore.map((item, index) => (
+          {visibleExplore.map((item, index) => (
             <Animated.View
               key={item.route}
               entering={FadeInDown.duration(380).delay(240 + index * 45)}
@@ -240,6 +270,53 @@ export default function HomeScreen() {
           ))}
         </View>
       </ScrollView>
+
+      <ResizableSheet visible={customizeOpen} onClose={() => setCustomizeOpen(false)}>
+        <View style={{ paddingHorizontal: space[5], paddingBottom: space[5] }}>
+          <Text variant="subheading" font="uiBold" style={{ textAlign: 'center' }}>
+            {t('home.customize')}
+          </Text>
+          <Text variant="caption" color="tertiary" style={{ textAlign: 'center', marginTop: 4, marginBottom: space[4] }}>
+            {t('home.customizeHint')}
+          </Text>
+          {orderedExplore.map((tile, i) => {
+            const shown = !homeTiles.hidden.includes(tile.route);
+            const onlyOne = visibleExplore.length === 1 && shown;
+            return (
+              <View key={tile.route} style={[styles.customRow, { borderColor: colors.hairline }]}>
+                <Ionicons name={tile.icon as keyof typeof Ionicons.glyphMap} size={17} color={colors.textSecondary} />
+                <Text variant="bodySmall" style={{ flex: 1 }} numberOfLines={1}>
+                  {tile.title}
+                </Text>
+                <Pressable onPress={() => moveTile(tile.route, -1)} hitSlop={6} disabled={i === 0} style={{ opacity: i === 0 ? 0.25 : 0.8, padding: 4 }}>
+                  <Ionicons name="chevron-up" size={16} color={colors.text} />
+                </Pressable>
+                <Pressable onPress={() => moveTile(tile.route, 1)} hitSlop={6} disabled={i === orderedExplore.length - 1} style={{ opacity: i === orderedExplore.length - 1 ? 0.25 : 0.8, padding: 4 }}>
+                  <Ionicons name="chevron-down" size={16} color={colors.text} />
+                </Pressable>
+                <View style={{ marginLeft: 4, opacity: onlyOne ? 0.4 : 1 }}>
+                  <Toggle
+                    value={shown}
+                    onValueChange={(v) => {
+                      if (!v && onlyOne) return;
+                      const hidden = v
+                        ? homeTiles.hidden.filter((r) => r !== tile.route)
+                        : [...homeTiles.hidden, tile.route];
+                      setHomeTiles({ hidden });
+                    }}
+                  />
+                </View>
+              </View>
+            );
+          })}
+          <Pressable
+            onPress={() => setHomeTiles({ order: [], hidden: [] })}
+            style={({ pressed }) => [styles.resetBtn, { borderColor: colors.hairline }, pressed && { opacity: 0.7 }]}
+          >
+            <Text variant="bodySmall" font="uiBold" color="secondary">{t('home.resetLayout')}</Text>
+          </Pressable>
+        </View>
+      </ResizableSheet>
     </View>
   );
 }
@@ -247,6 +324,10 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: space[4] },
   tileWrap: { flex: 1 },
+  exploreHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  tuneBtn: { width: 30, height: 30, borderRadius: 15, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center' },
+  customRow: { flexDirection: 'row', alignItems: 'center', gap: space[2], paddingVertical: space[3], borderBottomWidth: StyleSheet.hairlineWidth },
+  resetBtn: { alignItems: 'center', paddingVertical: space[3], borderRadius: radius.md, borderWidth: StyleSheet.hairlineWidth, marginTop: space[4] },
   locationLink: { flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: '70%' },
   hero: { fontSize: 33, lineHeight: 39, letterSpacing: -0.8 },
   selector: { flexDirection: 'row', gap: space[3], marginTop: space[4] },

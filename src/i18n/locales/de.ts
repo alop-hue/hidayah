@@ -34,6 +34,9 @@ const de: Translation = {
 
   home: {
     explore: 'Entdecken',
+    customize: 'Übersicht anpassen',
+    customizeHint: 'Wählen Sie, welche Werkzeuge auf dem Startbildschirm erscheinen',
+    resetLayout: 'Layout zurücksetzen',
     prayerAt: '{{prayer}} um {{time}}',
     hadithHint: '9 Sammlungen',
     memorizeHint: 'Fortschritt verfolgen',

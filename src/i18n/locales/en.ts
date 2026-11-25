@@ -32,6 +32,9 @@ const en = {
 
   home: {
     explore: 'Explore',
+    customize: 'Customize dashboard',
+    customizeHint: 'Choose which tools appear on your home screen',
+    resetLayout: 'Reset layout',
     prayerAt: '{{prayer}} at {{time}}',
     hadithHint: '9 collections',
     memorizeHint: 'Track your progress',

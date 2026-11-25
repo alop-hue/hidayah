@@ -34,6 +34,9 @@ const id: Translation = {
 
   home: {
     explore: 'Jelajahi',
+    customize: 'Sesuaikan dasbor',
+    customizeHint: 'Pilih alat yang tampil di layar utama Anda',
+    resetLayout: 'Atur ulang tata letak',
     prayerAt: '{{prayer}} pukul {{time}}',
     hadithHint: '9 koleksi',
     memorizeHint: 'Lacak hafalanmu',

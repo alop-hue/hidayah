@@ -59,7 +59,7 @@ interface Props {
 }
 
 const FONT_SIZE = 27;
-const LINE_HEIGHT = 50;
+const LINE_HEIGHT = 60;
 const PAGE_BG = '#0A1A14';
 const PAGE_TEXT = '#F5EDDA';
 const MARKER_COLOR = '#C9A227';

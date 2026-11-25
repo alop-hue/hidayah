@@ -34,6 +34,9 @@ const ur: Translation = {
 
   home: {
     explore: 'دریافت کریں',
+    customize: 'ڈیش بورڈ حسبِ ضرورت',
+    customizeHint: 'منتخب کریں کہ آپ کی ہوم اسکرین پر کیا نظر آئے',
+    resetLayout: 'ترتیب بحال کریں',
     prayerAt: '{{prayer}} {{time}}',
     hadithHint: '۹ مجموعے',
     memorizeHint: 'حفظ کی پیش رفت',
