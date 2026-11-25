@@ -33,7 +33,7 @@ import {
 } from '@/db/userdb';
 import { HIGHLIGHT_ORDER, HIGHLIGHT_SWATCH } from '@/features/quran/highlights';
 import { colorizeWords, splitWords } from '@/features/quran/tajweed';
-import { locateAtMs, preloadTiming } from '@/features/quran/timing';
+import { locateAtMsScaled, preloadTiming } from '@/features/quran/timing';
 import { getWbwWord, preloadWbw } from '@/features/quran/wbw';
 import { arabicSurahName, surahDisplayName } from '@/features/quran/surahNames';
 import { playAyah, playSurah, playWord, RECITERS, startMemorizeRange, stopMemorize, subscribeToPlayer, togglePlayPause, type PlayerStatus } from '@/services/audio';
@@ -41,6 +41,7 @@ import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
 import { radius, space } from '@/theme/tokens';
 import { Clipboard } from 'react-native';
+import { toArabicDigits } from '@/lib/digits';
 
 const TAJWEED_COLOR_KEY = { madd: 'madd', qalqalah: 'qalqalah', ghunnah: 'ghunnah', ikhfa: 'ikhfa', hamzat: 'hamzat' } as const;
 
@@ -74,6 +75,9 @@ export default function ReaderScreen() {
   const [player, setPlayer] = useState<PlayerStatus>({ playing: false, isLoaded: false, currentTime: 0, duration: 0, didJustFinish: false, surah: null, memorize: null, startAyah: null });
   const listRef = useRef<FlatList<LoadedVerse>>(null);
   const [sheetVerse, setSheetVerse] = useState<number | null>(null);
+  // The verse picked for the floating top action bar (independent of the sheet).
+  const [pickedAyah, setPickedAyah] = useState<number | null>(null);
+  const [barBookmarked, setBarBookmarked] = useState(false);
   const [highlights, setHighlights] = useState<Record<number, HighlightColor>>({});
   const [highlightColor, setHighlightColor] = useState<HighlightColor | null>(null);
   const [memorizeMode, setMemorizeMode] = useState(params.memorize === '1');
@@ -157,6 +161,20 @@ export default function ReaderScreen() {
     setTafsir(map);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlights]);
+
+  const pickAyah = useCallback(
+    (ayah: number) => {
+      setPickedAyah(ayah);
+      void isAyahBookmarked(surahId, ayah).then(setBarBookmarked);
+      void Haptics.selectionAsync().catch(() => {});
+    },
+    [surahId],
+  );
+
+  const pickedVerse = useMemo(
+    () => (pickedAyah == null ? null : (verses?.find((v) => v.ayah.ayah === pickedAyah) ?? null)),
+    [pickedAyah, verses],
+  );
 
   /** Persist a highlight and keep the reader in sync immediately. */
   const applyHighlight = useCallback(
@@ -285,7 +303,7 @@ export default function ReaderScreen() {
       setActiveWord(null);
       return;
     }
-    const loc = audio.reciterId === 'mishary_alafasy' ? locateAtMs(surahId, player.currentTime * 1000) : null;
+    const loc = locateAtMsScaled(surahId, player.currentTime * 1000, player.duration * 1000);
     if (loc) {
       setActiveAyah(loc.ayah);
       setActiveWord(Math.max(0, loc.word - 1));
@@ -366,6 +384,71 @@ export default function ReaderScreen() {
         </View>
       </View>
 
+      {pickedVerse ? (
+        <View
+          style={[
+            styles.actionBar,
+            { backgroundColor: colors.glass, borderColor: colors.glassBorder },
+          ]}
+        >
+          <View style={[styles.actionAyah, { backgroundColor: colors.primarySoft }]}>
+            <Text variant="micro" font="uiBold" color="primary">
+              {isArabic ? toArabicDigits(pickedVerse.ayah.ayah) : pickedVerse.ayah.ayah}
+            </Text>
+          </View>
+          <BarAction icon="share-outline" label={t('common.share')} onPress={() => void shareVerse(pickedVerse)} colors={colors} />
+          <BarAction icon="copy-outline" label={t('quran.copyVerse')} onPress={() => void copyVerse(pickedVerse)} colors={colors} />
+          <BarAction
+            icon={hidden.has(pickedVerse.ayah.ayah) ? 'eye' : 'eye-off-outline'}
+            label={hidden.has(pickedVerse.ayah.ayah) ? t('quran.showAyah') : t('quran.hideAyah')}
+            active={hidden.has(pickedVerse.ayah.ayah)}
+            onPress={() => {
+              toggleHiddenState(pickedVerse.ayah.ayah);
+              setHidden((prev) => {
+                const next = new Set(prev);
+                if (next.has(pickedVerse.ayah.ayah)) next.delete(pickedVerse.ayah.ayah);
+                else next.add(pickedVerse.ayah.ayah);
+                return next;
+              });
+            }}
+            colors={colors}
+          />
+          <BarAction
+            icon="play"
+            label={t('quran.audio')}
+            active={activeAyah === pickedVerse.ayah.ayah && player.playing}
+            onPress={() => void playAyah(surahId, pickedVerse.ayah.ayah)}
+            colors={colors}
+          />
+          <BarAction
+            icon={barBookmarked ? 'bookmark' : 'bookmark-outline'}
+            label={t('quran.bookmarkVerse')}
+            active={barBookmarked}
+            onPress={() => {
+              void toggleAyahBookmark(surahId, pickedVerse.ayah.ayah).then((bm) => {
+                setBarBookmarked(bm);
+                void Haptics.notificationAsync(
+                  bm ? Haptics.NotificationFeedbackType.Success : Haptics.NotificationFeedbackType.Warning,
+                ).catch(() => {});
+              });
+            }}
+            colors={colors}
+          />
+          <Pressable
+            onPress={() => void openSheet(pickedVerse)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('quran.tafsir')}
+            style={styles.barClose}
+          >
+            <Ionicons name="ellipsis-horizontal" size={18} color={colors.textSecondary} />
+          </Pressable>
+          <Pressable onPress={() => setPickedAyah(null)} hitSlop={8} accessibilityRole="button" accessibilityLabel={t('common.close')} style={styles.barClose}>
+            <Ionicons name="close" size={16} color={colors.textSecondary} />
+          </Pressable>
+        </View>
+      ) : null}
+
       <ResizableSheet visible={settingsOpen} onClose={() => setSettingsOpen(false)}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: space[5], paddingBottom: insets.bottom + space[4] }}>
           <Text variant="subheading" font="uiBold" style={{ textAlign: 'center', marginBottom: space[3] }}>
@@ -393,7 +476,10 @@ export default function ReaderScreen() {
             <Text variant="bodySmall" color="secondary">{t('quran.reciter')}</Text>
             <Pressable onPress={() => setReciterOpen(!reciterOpen)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text variant="bodySmall" font="uiBold" color="primary">
-                {RECITERS.find((r) => r.id === audio.reciterId)?.name ?? ''}
+                {((): string => {
+                const r = RECITERS.find((x) => x.id === audio.reciterId);
+                return (isArabic ? r?.ar : r?.name) ?? r?.name ?? '';
+              })()}
               </Text>
               <Ionicons name={reciterOpen ? 'chevron-up' : 'chevron-down'} size={16} color={colors.primary} />
             </Pressable>
@@ -441,7 +527,7 @@ export default function ReaderScreen() {
         showBismillah={showBismillah}
         activeAyah={activeAyah}
         highlights={highlights}
-        selectedAyah={sheetVerse}
+        selectedAyah={pickedAyah}
         focusAyah={memorizeMode ? focusAyah : targetAyah}
         memorizeMode={memorizeMode}
         tajweed={tajweed}
@@ -449,8 +535,7 @@ export default function ReaderScreen() {
         activeWord={activeWord}
         activeWordAyah={activeAyah}
         onPressAyah={(ayah) => {
-          const v = verses.find((x) => x.ayah.ayah === ayah);
-          if (v) void openSheet(v);
+          pickAyah(ayah);
         }}
         onPressWord={(ayah, word) => {
           const v = verses.find((x) => x.ayah.ayah === ayah);
@@ -693,13 +778,17 @@ function VerseSheet({
                   {t('quran.tafsir')}
                 </Text>
                 <Segmented
-                  options={tafsirRows.map((s) => ({ value: s.id, label: s.label }))}
+                  options={tafsirRows.map((s) => ({ value: s.id, label: isArabic && s.labelAr ? s.labelAr : s.label }))}
                   value={tafsirTab}
                   onChange={setTafsirTab}
                 />
                 <View style={{ marginTop: space[3] }}>
                   {tafsir[tafsirTab] ? (
-                    <Text variant="bodySmall" color="secondary" style={{ lineHeight: 22 }}>
+                    <Text
+                      variant="bodySmall"
+                      color="secondary"
+                      style={{ lineHeight: 26, textAlign: isArabic ? 'right' : 'left', writingDirection: isArabic ? 'rtl' : 'ltr' }}
+                    >
                       {stripHtml(tafsir[tafsirTab]!.text)}
                     </Text>
                   ) : (
@@ -767,6 +856,34 @@ function VerseSheet({
   );
 }
 
+function BarAction({
+  icon,
+  label,
+  onPress,
+  active,
+  colors,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+  active?: boolean;
+  colors: ReturnType<typeof useTheme>['colors'];
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => [styles.barAction, pressed && { opacity: 0.6, transform: [{ scale: 0.94 }] }]}
+    >
+      <Ionicons name={icon} size={19} color={active ? colors.primary : colors.textSecondary} />
+      <Text variant="micro" color={active ? 'primary' : 'tertiary'} numberOfLines={1} style={{ fontSize: 9 }}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 function ActionBtn({ icon, label, onPress, active, colors }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void; active?: boolean; colors: ReturnType<typeof useTheme>['colors'] }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.7 }]}>
@@ -784,6 +901,20 @@ const styles = StyleSheet.create({
   pronBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center', padding: space[5] },
   pronCard: { borderRadius: radius.md, borderWidth: 1, paddingHorizontal: space[5], paddingVertical: space[4], alignItems: 'center', gap: space[2], maxWidth: '90%' },
   header: { borderBottomWidth: StyleSheet.hairlineWidth * 2 },
+  actionBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    marginHorizontal: space[3],
+    marginTop: space[2],
+    paddingHorizontal: space[2],
+    paddingVertical: space[1],
+    borderRadius: radius.pill,
+    borderWidth: 1,
+  },
+  actionAyah: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', marginHorizontal: 2 },
+  barAction: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2, paddingVertical: 4 },
+  barClose: { width: 24, height: 32, alignItems: 'center', justifyContent: 'center' },
   headerRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space[2], paddingHorizontal: space[3], paddingVertical: space[2] },
   iconBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   controlsWrap: { paddingBottom: space[2] },

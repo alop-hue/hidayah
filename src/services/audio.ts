@@ -3,7 +3,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import * as LegacyFS from 'expo-file-system/legacy';
 
 import reciters from '../../assets/data/reciters.json';
-import { getAyahStartSeconds, preloadTiming } from '../features/quran/timing';
+import { getAyahStartSeconds, preloadTiming, surahTimingTotalMs } from '../features/quran/timing';
 import { useSettings } from '../store/settings';
 
 export interface Reciter {
@@ -194,7 +194,12 @@ async function playSurahMode(surah: number, fromAyah: number | undefined, mode: 
       // finishes the track, which used to trigger an unwanted gapless jump.
       await preloadTiming();
       const dur = await waitForDuration(p);
-      const timed = reciterId === 'mishary_alafasy' ? getAyahStartSeconds(surah, fromAyah) : null;
+      const timedBase = getAyahStartSeconds(surah, fromAyah);
+      const totalMs = surahTimingTotalMs(surah);
+      // Reciter files have their own length: scale the reference start time
+      // onto this recitation instead of seeking to a foreign timestamp.
+      const timed =
+        timedBase == null ? null : reciterId === 'mishary_alafasy' || !totalMs ? timedBase : (timedBase / totalMs) * dur;
       const seekSec = timed ?? (fromAyah - 2) * 25;
       if (dur > 0) {
         await p.seekTo(Math.min(Math.max(0, seekSec), Math.max(0, dur - 2)));

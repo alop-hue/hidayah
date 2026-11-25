@@ -555,6 +555,8 @@ const styles = StyleSheet.create({
     direction: 'rtl',
     borderRadius: 4,
     paddingHorizontal: 1,
+    // room for Arabic descenders + the inline ayah marker so tapping never clips
+    paddingVertical: 3,
     marginBottom: 4,
   },
   verseMarker: {

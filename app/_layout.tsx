@@ -75,7 +75,6 @@ function AppShell() {
         <Stack.Screen name="tools/tasbih" />
         <Stack.Screen name="tools/dhikr" />
         <Stack.Screen name="tools/calendar" />
-        <Stack.Screen name="tools/mosque" />
         <Stack.Screen name="prayer/settings" />
         <Stack.Screen name="prayer/notifications" />
         <Stack.Screen name="more/settings" />

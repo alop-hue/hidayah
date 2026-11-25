@@ -45,6 +45,21 @@ function surahTiming(surah: number): SurahTimingRaw | null {
   return cache?.[String(surah)] ?? null;
 }
 
+/**
+ * Same lookup, but for reciters whose audio isn't the bundled timing source:
+ * map the player's relative position onto the reference recitation timeline.
+ * Tempo differs between reciters, but ayah boundaries track closely.
+ */
+export function locateAtMsScaled(
+  surah: number,
+  ms: number,
+  playerDurationMs: number,
+): { ayah: number; word: number } | null {
+  const total = surahTimingTotalMs(surah);
+  if (!total || playerDurationMs <= 0) return locateAtMs(surah, ms);
+  return locateAtMs(surah, (Math.min(Math.max(0, ms), playerDurationMs) / playerDurationMs) * total);
+}
+
 /** Total duration (ms) of a surah's timing, or null. */
 export function surahTimingTotalMs(surah: number): number | null {
   return surahTiming(surah)?.t ?? null;

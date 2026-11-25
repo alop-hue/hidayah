@@ -51,7 +51,7 @@ export default function LegalScreen() {
     privacy: {
       title: t('legal.privacy'),
       body:
-        '1. Local data only\nBookmarks, notes, settings and downloads are stored exclusively on this device.\n\n2. No analytics\nNoor contains no tracking, analytics SDKs or fingerprinting.\n\n3. Notifications are local\nPrayer reminders are computed and scheduled on-device. No notification service or push server is involved.\n\n4. Permissions are opt-in\nLocation, notifications and exact alarms are requested only when you enable the features that need them.\n\n5. Network use\nStreaming audio, Quran data updates and the optional mosque finder contact public services. Your IP address is visible to those services as with any web request.\n\n6. Your rights\nExport your data at any time (More > About > Export) or delete all local data (More > About > Clear all local data).',
+        '1. Local data only\nBookmarks, notes, settings and downloads are stored exclusively on this device.\n\n2. No analytics\nNoor contains no tracking, analytics SDKs or fingerprinting.\n\n3. Notifications are local\nPrayer reminders are computed and scheduled on-device. No notification service or push server is involved.\n\n4. Permissions are opt-in\nLocation, notifications and exact alarms are requested only when you enable the features that need them.\n\n5. Network use\nStreaming audio and Quran data updates contact public services. Your IP address is visible to those services as with any web request.\n\n6. Your rights\nExport your data at any time (More > About > Export) or delete all local data (More > About > Clear all local data).',
     },
     terms: {
       title: t('legal.terms'),

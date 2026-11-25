@@ -109,7 +109,6 @@ export default function HomeScreen() {
   const explore = [
     { icon: 'sparkles', title: t('tools.names99'), hint: t('tools.names99Hint'), route: '/tools/names99' },
     { icon: 'chatbubbles', title: t('hadith.title'), hint: t('home.hadithHint'), route: '/hadith' },
-    { icon: 'business', title: t('tools.mosque'), hint: t('home.mosqueHint'), route: '/tools/mosque' },
     { icon: 'flower', title: t('tools.dhikr'), hint: t('tools.dhikrHint'), route: '/tools/dhikr' },
     { icon: 'school-outline', title: t('memorize.title'), hint: t('home.memorizeHint'), route: '/more/memorize' },
     { icon: 'repeat', title: t('tools.tasbih'), hint: t('tools.tasbihHint'), route: '/tools/tasbih' },

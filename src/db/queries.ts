@@ -252,10 +252,10 @@ export const TRANSLATION_EDITIONS: Record<string, { lang: string; label: string 
 };
 
 export const TAFSIR_SOURCES = [
-  { id: 'ibn-kathir-en', lang: 'en', label: 'Ibn Kathir' },
-  { id: 'saadi', lang: 'ar', label: 'Al-Sa\'di' },
-  { id: 'jalalayn', lang: 'ar', label: 'Jalalayn' },
-  { id: 'ibn-kathir-ur', lang: 'ur', label: 'Ibn Kathir (اردو)' },
+  { id: 'ibn-kathir-en', lang: 'en', label: 'Ibn Kathir', labelAr: 'تفسير ابن كثير' },
+  { id: 'saadi', lang: 'ar', label: "Al-Sa'di", labelAr: 'تفسير السعدي' },
+  { id: 'jalalayn', lang: 'ar', label: 'Jalalayn', labelAr: 'تفسير الجلالين' },
+  { id: 'ibn-kathir-ur', lang: 'ur', label: 'Ibn Kathir (اردو)', labelAr: 'تفسير ابن كثير (اردو)' },
 ];
 
 export const TAFSIR_BY_LANG: Record<string, string> = {

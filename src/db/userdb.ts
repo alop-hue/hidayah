@@ -44,38 +44,8 @@ async function getDb(): Promise<SQLiteDatabase> {
       memorized_at INTEGER NOT NULL,
       UNIQUE(surah, ayah)
     );
-    CREATE TABLE IF NOT EXISTS user_mosques(
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      lat REAL NOT NULL,
-      lng REAL NOT NULL,
-      created_at INTEGER NOT NULL
-    );
   `);
   return db;
-}
-
-export interface UserMosque {
-  id: number;
-  name: string;
-  lat: number;
-  lng: number;
-  created_at: number;
-}
-
-export async function addUserMosque(name: string, lat: number, lng: number): Promise<void> {
-  const d = await getDb();
-  await d.runAsync('INSERT INTO user_mosques (name, lat, lng, created_at) VALUES (?, ?, ?, ?)', name, lat, lng, Date.now());
-}
-
-export async function getUserMosques(): Promise<UserMosque[]> {
-  const d = await getDb();
-  return (await d.getAllAsync<UserMosque>('SELECT * FROM user_mosques ORDER BY created_at DESC')) ?? [];
-}
-
-export async function deleteUserMosque(id: number): Promise<void> {
-  const d = await getDb();
-  await d.runAsync('DELETE FROM user_mosques WHERE id = ?', id);
 }
 
 export interface AyahBookmark {

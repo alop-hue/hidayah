@@ -128,7 +128,7 @@ export default function HadithBookScreen() {
                   </Text>
                 ) : null}
               </View>
-              <Text variant="bodySmall" font="arabicBold" style={{ color: colors.quranText, textAlign: isArabic ? 'left' : 'right', marginTop: space[2] }}>
+              <Text variant="bodySmall" font="arabicBold" style={{ color: colors.quranText, textAlign: 'right', writingDirection: 'rtl', lineHeight: 32, marginTop: space[2] }}>
                 {item.arabic}
               </Text>
               {!isArabic ? (
@@ -254,7 +254,7 @@ function HadithSheet({
             <Text variant="caption" font="uiBold" color="primary" style={isArabic ? styles.rtlTitle : undefined}>
               {sheetTitle} {hadith.number > 0 ? `· ${isArabic ? toArabicDigits(hadith.number) : hadith.number}` : ''}
             </Text>
-              <Text variant="body" font="arabicBold" style={{ color: colors.quranText, textAlign: 'right', marginTop: space[3] }}>
+              <Text variant="body" font="arabicBold" style={{ color: colors.quranText, textAlign: 'right', writingDirection: 'rtl', lineHeight: 34, marginTop: space[3] }}>
                 {hadith.arabic}
               </Text>
               {!isArabic ? (
