@@ -125,8 +125,14 @@ export function CustomTabBar({ state, navigation }: any) {
         }}
         style={({ pressed }) => [styles.tab, pressed && { opacity: 0.7 }]}
       >
-        <TabHighlight active={focused} />
-        <View style={styles.iconCapsule}>
+        <View
+          style={[
+            styles.iconCapsule,
+            focused && {
+              backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.07)' : 'rgba(255,255,255,0.12)',
+            },
+          ]}
+        >
           <DockIcon name={tab.icon} color={color} active={focused} />
         </View>
         <Text variant="micro" font="uiBold" style={{ color, marginTop: 4 }} numberOfLines={1}>
@@ -190,32 +196,6 @@ export function CustomTabBar({ state, navigation }: any) {
   );
 }
 
-/**
- * Selection highlight is painted *inside* its own tab, so it can never drift:
- * no absolute coordinates, no transform, no RTL maths.
- */
-function TabHighlight({ active }: { active: boolean }) {
-  const { colors, mode } = useTheme();
-  const progress = useSharedValue(active ? 1 : 0);
-  useEffect(() => {
-    progress.value = withTiming(active ? 1 : 0, { duration: 190 });
-  }, [active, progress]);
-  const style = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    transform: [{ scale: 0.92 + progress.value * 0.08 }],
-  }));
-  return (
-    <Animated.View
-      pointerEvents="none"
-      style={[
-        styles.tabHighlight,
-        { backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.07)' : 'rgba(255,255,255,0.14)', borderColor: colors.hairline },
-        style,
-      ]}
-    />
-  );
-}
-
 /** Height reserved at the bottom of scrollable screens so the dock never covers content. */
 export const DOCK_SPACE = 118;
 
@@ -259,15 +239,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: space[2],
     paddingVertical: 6,
   },
-  tabHighlight: {
-    position: 'absolute',
-    left: 4,
-    right: 4,
-    top: 6,
-    bottom: 6,
-    borderRadius: 22,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
   tab: {
     flex: 1,
     alignItems: 'center',
@@ -275,8 +246,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   iconCapsule: {
-    width: 46,
-    height: 26,
+    width: 52,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -45,7 +45,7 @@ vercel --prod
 
 ## روابط ثابتة
 
-- تحميل APK: `https://github.com/alop-hue/noor/releases/latest/download/Hidayah-Quran-v1.0.0.apk`
-- المستودع: `https://github.com/alop-hue/noor`
+- تحميل APK: `https://github.com/alop-hue/hidayah/releases/latest/download/Hidayah-Quran-v1.0.0.apk`
+- المستودع: `https://github.com/alop-hue/hidayah`
 
 عند إصدار نسخة جديدة بنفس الاسم، يظل رابط التحميل في الموقع صالحًا تلقائيًا (علامة `latest`).
