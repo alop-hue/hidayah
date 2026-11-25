@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import { Text } from '@/components/ui';
 import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
@@ -132,7 +133,7 @@ export default function HomeScreen() {
         }}
       >
         {/* header: mark + location */}
-        <View style={styles.topRow}>
+        <Animated.View entering={FadeIn.duration(360)} style={styles.topRow}>
           <Ionicons name="moon" size={15} color={colors.textSecondary} />
           <Pressable
             onPress={() => router.push('/more/settings')}
@@ -145,18 +146,20 @@ export default function HomeScreen() {
               {locationLabel}
             </Text>
           </Pressable>
-        </View>
+        </Animated.View>
 
         {/* next prayer hero */}
-        <Text variant="display" font="uiBold" style={styles.hero} numberOfLines={2}>
-          {result.next ? t('home.prayerAt', { prayer: nextName, time: arDigits(nextTime) }) : t('home.nextPrayer')}
-        </Text>
-        <Text variant="body" color="secondary" style={{ marginTop: 2 }}>
-          {hijri.full}
-        </Text>
+        <Animated.View entering={FadeInDown.duration(420).delay(60).springify().damping(20)}>
+          <Text variant="display" font="uiBold" style={styles.hero} numberOfLines={2}>
+            {result.next ? t('home.prayerAt', { prayer: nextName, time: arDigits(nextTime) }) : t('home.nextPrayer')}
+          </Text>
+          <Text variant="body" color="secondary" style={{ marginTop: 2 }}>
+            {hijri.full}
+          </Text>
+        </Animated.View>
 
         {/* date + location selector */}
-        <View style={styles.selector}>
+        <Animated.View entering={FadeInDown.duration(420).delay(110).springify().damping(20)} style={styles.selector}>
           <AnimatedPressable
             onPress={() => router.push('/tools/calendar')}
             style={[styles.selectorItem, styles.dateItem, { backgroundColor: colors.bgElevated }]}
@@ -174,10 +177,12 @@ export default function HomeScreen() {
               {locationLabel}
             </Text>
           </AnimatedPressable>
-        </View>
+        </Animated.View>
 
         {/* prayer times card */}
-        <View style={[styles.prayerCard, { backgroundColor: mode === 'light' ? colors.card : '#121316' }]}>
+        <Animated.View
+          entering={FadeInDown.duration(440).delay(160).springify().damping(20)}
+          style={[styles.prayerCard, { backgroundColor: mode === 'light' ? colors.card : '#121316' }]}>
           {PRAYER_ORDER.map((name, idx) => {
             const active = result.next?.name === name;
             return (
@@ -201,16 +206,22 @@ export default function HomeScreen() {
               </View>
             );
           })}
-        </View>
+        </Animated.View>
 
         {/* explore */}
-        <Text variant="subheading" font="uiBold" style={{ marginTop: space[7], marginBottom: space[3] }}>
-          {t('home.explore')}
-        </Text>
+        <Animated.Text entering={FadeInDown.duration(420).delay(210)} style={{ marginTop: space[7], marginBottom: space[3] }}>
+          <Text variant="subheading" font="uiBold">
+            {t('home.explore')}
+          </Text>
+        </Animated.Text>
         <View style={styles.grid}>
-          {explore.map((item) => (
-            <AnimatedPressable
+          {explore.map((item, index) => (
+            <Animated.View
               key={item.route}
+              entering={FadeInDown.duration(380).delay(240 + index * 45)}
+              style={styles.tileWrap}
+            >
+            <AnimatedPressable
               haptic
               onPress={() => router.push(item.route as never)}
               style={[styles.tile, { backgroundColor: colors.card }]}
@@ -225,6 +236,7 @@ export default function HomeScreen() {
                 {item.hint}
               </Text>
             </AnimatedPressable>
+            </Animated.View>
           ))}
         </View>
       </ScrollView>
@@ -234,6 +246,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: space[4] },
+  tileWrap: { flex: 1 },
   locationLink: { flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: '70%' },
   hero: { fontSize: 33, lineHeight: 39, letterSpacing: -0.8 },
   selector: { flexDirection: 'row', gap: space[3], marginTop: space[4] },

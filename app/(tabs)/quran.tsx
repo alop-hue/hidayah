@@ -8,6 +8,13 @@ import { useTranslation } from 'react-i18next';
 import { Segmented, Text, LoadingState } from '@/components/ui';
 import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 import { getByJuz, getByPage, getSurahs, type SurahRow } from '@/db/queries';
+import bundledSurahs from '@/../assets/data/surahs.json';
+
+// Render the list immediately from the bundled index; the DB query then
+// replaces it with the same data (so the tab never shows a spinner on open).
+const SEED_SURAHS: SurahRow[] = (bundledSurahs as { id: number; name: string; englishName: string; translation: string; type: string; ayahs: number }[]).map(
+  (s) => ({ id: s.id, name: s.name, english_name: s.englishName, translation: s.translation, type: s.type, ayahs: s.ayahs }),
+);
 import { arabicSurahName, surahDisplayName } from '@/features/quran/surahNames';
 import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme/ThemeContext';
@@ -22,7 +29,7 @@ export default function QuranTab() {
   const insets = useSafeAreaInsets();
   const { lastRead } = useSettings();
   const [mode, setMode] = useState<Mode>('surah');
-  const [surahs, setSurahs] = useState<SurahRow[] | null>(null);
+  const [surahs, setSurahs] = useState<SurahRow[] | null>(SEED_SURAHS);
 
   useEffect(() => {
     getSurahs().then(setSurahs);

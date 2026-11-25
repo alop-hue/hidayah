@@ -3,19 +3,22 @@ import { Amiri_400Regular, Amiri_700Bold } from '@expo-google-fonts/amiri';
 import { ScheherazadeNew_400Regular, ScheherazadeNew_700Bold } from '@expo-google-fonts/scheherazade-new';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { I18nManager, StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Animated as RNAnimated, Easing, I18nManager, Image, StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 
-import { Button, LoadingState, Text } from '@/components/ui';
+import { Button, Text } from '@/components/ui';
 import { WelcomeScreen } from '@/components/ui/WelcomeScreen';
 import { ensureDatabase } from '@/db/database';
+import { preloadTiming } from '@/features/quran/timing';
+import { preloadWbw } from '@/features/quran/wbw';
 import { initI18n, isRtl, i18n } from '@/i18n';
 import { installErrorListener } from '@/services/diagnostics';
 import * as Notifications from 'expo-notifications';
 import { resyncPrayerNotifications, setupNotificationChannels } from '@/services/notifications';
 import { useSettings } from '@/store/settings';
 import { ThemeProvider, useTheme } from '@/theme/ThemeContext';
+import { space } from '@/theme/tokens';
 
 type GateState = 'unpacking' | 'indexing' | 'ready' | 'error';
 
@@ -37,6 +40,20 @@ function applyRtl(lang: string | null) {
 
 function GateScreen({ gate, retry }: { gate: Exclude<GateState, 'ready'>; retry: () => void }) {
   const { colors } = useTheme();
+  const sweep = useRef(new RNAnimated.Value(0)).current;
+  useEffect(() => {
+    if (gate === 'error') return;
+    const loop = RNAnimated.loop(
+      RNAnimated.sequence([
+        RNAnimated.timing(sweep, { toValue: 1, duration: 1100, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+        RNAnimated.timing(sweep, { toValue: 0, duration: 900, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [gate, sweep]);
+
+  const label = gate === 'unpacking' ? i18n.t('gate.preparing') : i18n.t('gate.indexing');
   return (
     <View style={[styles.gate, { backgroundColor: colors.bg }]}>
       {gate === 'error' ? (
@@ -45,13 +62,31 @@ function GateScreen({ gate, retry }: { gate: Exclude<GateState, 'ready'>; retry:
           <Button title={i18n.t('gate.retry')} onPress={retry} />
         </View>
       ) : (
-        <View style={{ alignItems: 'center', gap: 8 }}>
-          <Text variant="display" font="arabicBold">
+        <View style={{ alignItems: 'center' }}>
+          <View style={[styles.gateMark, { borderColor: colors.hairline, backgroundColor: colors.card }]}>
+            <Image source={require('../assets/images/icon.png')} style={styles.gateIcon} resizeMode="cover" />
+          </View>
+          <Text variant="display" font="arabicBold" style={{ marginTop: space[5], color: colors.text }}>
             هداية
           </Text>
-          <LoadingState
-            label={gate === 'unpacking' ? i18n.t('gate.preparing') : i18n.t('gate.indexing')}
-          />
+          <Text variant="caption" color="tertiary" style={{ marginTop: 4, letterSpacing: 3, fontSize: 10 }}>
+            HIDAYAH
+          </Text>
+          <View style={[styles.gateTrack, { backgroundColor: colors.hairline }]}>
+            <RNAnimated.View
+              style={[
+                styles.gateBar,
+                {
+                  backgroundColor: colors.accent,
+                  opacity: sweep.interpolate({ inputRange: [0, 1], outputRange: [0.35, 1] }),
+                  transform: [
+                    { translateX: sweep.interpolate({ inputRange: [0, 1], outputRange: [-60, 60] }) },
+                  ],
+                },
+              ]}
+            />
+          </View>
+          <Text variant="caption" color="secondary" style={{ marginTop: space[4] }}>{label}</Text>
         </View>
       )}
     </View>
@@ -124,6 +159,10 @@ function Providers() {
         applyRtl(language);
         if (!cancelled) setGate('indexing');
         await ensureDatabase();
+        // Warm the recitation-timing and word-by-word tables in the background
+        // so the first Quran open (and first playback) is instant.
+        void preloadTiming();
+        void preloadWbw();
         await setupNotificationChannels();
         const perm = await Notifications.getPermissionsAsync();
         if (perm.granted) {
@@ -175,5 +214,17 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
+  gateMark: {
+    width: 104,
+    height: 104,
+    borderRadius: 30,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  gateIcon: { width: 104, height: 104 },
+  gateTrack: { width: 120, height: 2, borderRadius: 2, overflow: 'hidden', marginTop: space[5] },
+  gateBar: { width: 60, height: 2, borderRadius: 2 },
   gate: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#050607' },
 });

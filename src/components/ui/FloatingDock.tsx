@@ -2,7 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PanResponder, Platform, Pressable, StyleSheet, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MiniPlayer } from '@/components/audio/MiniPlayer';
@@ -47,7 +47,7 @@ export function CustomTabBar({ state, navigation }: any) {
   const { colors, mode } = useTheme();
   const insets = useSafeAreaInsets();
   const rtl = i18n.dir() === 'rtl';
-  const bottom = Math.max(insets.bottom - 4, 6);
+  const bottom = Math.max(insets.bottom - 10, 4);
 
   const rowRef = useRef<View>(null);
   const rowX = useRef(0);
@@ -59,7 +59,11 @@ export function CustomTabBar({ state, navigation }: any) {
   const [tabW, setTabW] = useState(0);
 
   const pillX = useSharedValue(0);
-  const pillStyle = useAnimatedStyle(() => ({ transform: [{ translateX: pillX.value }] }));
+  const pillW = useSharedValue(0);
+  const pillStyle = useAnimatedStyle(() => ({
+    left: pillX.value,
+    width: Math.max(0, pillW.value),
+  }));
   const tabXsRef = useRef<number[]>([]);
   tabXsRef.current = tabXs;
   const tabWRef = useRef(0);
@@ -69,7 +73,8 @@ export function CustomTabBar({ state, navigation }: any) {
     const x = tabXs[state.index];
     if (typeof x !== 'number') return;
     pillX.value = withSpring(x + 2, { damping: 18, stiffness: 220, mass: 0.7 });
-  }, [state.index, tabXs, pillX]);
+    pillW.value = withTiming(Math.max(0, tabW - 4), { duration: 180 });
+  }, [state.index, tabXs, tabW, pillX, pillW]);
 
   const goTo = (index: number) => {
     const clamped = Math.max(0, Math.min(TABS.length - 1, index));
@@ -185,7 +190,7 @@ export function CustomTabBar({ state, navigation }: any) {
               rowX.current = x;
             });
           }}
-          style={[styles.row, rtl && { flexDirection: 'row-reverse' }]}
+          style={styles.row}
           {...pan.panHandlers}
         >
           {tabW > 0 && typeof tabXs[state.index] === 'number' ? (
@@ -195,7 +200,6 @@ export function CustomTabBar({ state, navigation }: any) {
                 styles.pill,
                 pillStyle,
                 {
-                  width: tabW - 4,
                   backgroundColor: mode === 'light' ? 'rgba(14,15,17,0.06)' : 'rgba(255,255,255,0.16)',
                   borderColor: mode === 'light' ? 'rgba(14,15,17,0.04)' : 'rgba(255,255,255,0.06)',
                 },
@@ -255,10 +259,9 @@ const styles = StyleSheet.create({
   },
   pill: {
     position: 'absolute',
-    left: 0,
-    top: 6,
-    bottom: 6,
-    borderRadius: 26,
+    top: 12,
+    bottom: 12,
+    borderRadius: 22,
     borderWidth: StyleSheet.hairlineWidth,
   },
   tab: {
